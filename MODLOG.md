@@ -133,3 +133,6 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
   below the edge gets a zero-height scissor and 26.3's GuiRenderer throws "Scissor size must be >0". ConfigScreen now
   has two tabs (preferences / world) and lays widgets out in as many columns as the height needs. Highlighter lights
   both halves of a double chest (client looks up the partner from the block state). Gametest 45/45, incl. GUI scale 4.
+- 2026-11-08: removed the template's `pack.mcmeta` (pack_format 8): both loaders describe mod resources themselves,
+  and on 1.21.x Fabric it made the game log "Removed resource pack quickstack ... no longer compatible". The
+  self-check now waits for the loading overlay to close and also requires the mod's translations to be loaded.
