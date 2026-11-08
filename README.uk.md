@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img alt="Minecraft 26.3" src="https://img.shields.io/badge/Minecraft-26.3-62B47A?style=flat-square">
+  <img alt="Minecraft 1.21 – 26.3" src="https://img.shields.io/badge/Minecraft-1.21%20%E2%80%93%2026.3-62B47A?style=flat-square">
   <img alt="Fabric" src="https://img.shields.io/badge/Fabric-підтримується-DBD0B4?style=flat-square">
   <img alt="NeoForge" src="https://img.shields.io/badge/NeoForge-підтримується-E36D29?style=flat-square">
   <img alt="26 мов" src="https://img.shields.io/badge/мов-26-4C8BF5?style=flat-square">
@@ -105,7 +105,7 @@
 
 | | |
 |---|---|
-| Minecraft | **26.3** |
+| Minecraft | **1.21 – 26.3** — окремий реліз на кожен діапазон версій, див. нижче |
 | Завантажувач | **Fabric** (з [Fabric API](https://modrinth.com/mod/fabric-api)) або **NeoForge** |
 | Де ставити | **і клієнт, і сервер** — в одиночній грі працює одразу |
 | Необов'язково | [Mod Menu](https://modrinth.com/mod/modmenu) (Fabric) — кнопка налаштувань у списку модів |
@@ -113,7 +113,21 @@
 Візьми jar під свій завантажувач у [Releases](https://github.com/ifoxp/QuickStack-Minecraft/releases) і поклади в
 папку `mods`. Сторінка на CurseForge скоро буде.
 
-Старші версії (від 1.21.1) — у планах, щойно версія для 26.3 устоїться.
+У кожному релізі є jar для Fabric і для NeoForge, і кожен покриває діапазон версій Minecraft — обери той, що
+підходить до твоєї гри:
+
+| Minecraft | Реліз | Java |
+|---|---|---|
+| 26.3 | [v0.1.0+26.3](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B26.3) | 25 |
+| 26.2 | [v0.1.0+26.2](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B26.2) | 25 |
+| 26.1 – 26.1.2 | [v0.1.0+26.1.2](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B26.1.2) | 25 |
+| 1.21.11 | [v0.1.0+1.21.11](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B1.21.11) | 21 |
+| 1.21.9 – 1.21.10 | [v0.1.0+1.21.10](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B1.21.10) | 21 |
+| 1.21.6 – 1.21.8 | [v0.1.0+1.21.8](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B1.21.8) | 21 |
+| 1.21.5 | [v0.1.0+1.21.5](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B1.21.5) | 21 |
+| 1.21.4 | [v0.1.0+1.21.4](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B1.21.4) | 21 |
+| 1.21.2 – 1.21.3 | [v0.1.0+1.21.3](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B1.21.3) | 21 |
+| 1.21 – 1.21.1 | [v0.1.0+1.21.1](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B1.21.1) | 21 |
 
 ## Налаштування
 
@@ -157,7 +171,8 @@ Latviešu, Eesti, Română, Монгол.
 
 ## Збирання з коду
 
-Minecraft 26.3 потребує **Java 25**.
+Гілка `main` — для Minecraft 26.3, потребує **Java 25**; старші діапазони — у гілках `mc/<версія>` (Java 25 для
+26.x, Java 21 для 1.21.x).
 
 ```sh
 ./gradlew build -x javadoc                 # jar-файли в fabric/build/libs і neoforge/build/libs

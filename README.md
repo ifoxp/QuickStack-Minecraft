@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img alt="Minecraft 26.3" src="https://img.shields.io/badge/Minecraft-26.3-62B47A?style=flat-square">
+  <img alt="Minecraft 1.21 – 26.3" src="https://img.shields.io/badge/Minecraft-1.21%20%E2%80%93%2026.3-62B47A?style=flat-square">
   <img alt="Fabric" src="https://img.shields.io/badge/Fabric-supported-DBD0B4?style=flat-square">
   <img alt="NeoForge" src="https://img.shields.io/badge/NeoForge-supported-E36D29?style=flat-square">
   <img alt="26 languages" src="https://img.shields.io/badge/languages-26-4C8BF5?style=flat-square">
@@ -107,7 +107,7 @@ All keys can be changed in *Options → Controls → QuickStack*.
 
 | | |
 |---|---|
-| Minecraft | **26.3** |
+| Minecraft | **1.21 – 26.3** — one release per version range, see below |
 | Loader | **Fabric** (with [Fabric API](https://modrinth.com/mod/fabric-api)) or **NeoForge** |
 | Side | **client and server** — singleplayer works out of the box |
 | Optional | [Mod Menu](https://modrinth.com/mod/modmenu) (Fabric) for the settings button in the mod list |
@@ -115,7 +115,21 @@ All keys can be changed in *Options → Controls → QuickStack*.
 Get the jar for your loader from [Releases](https://github.com/ifoxp/QuickStack-Minecraft/releases) and put it in
 your `mods` folder. A CurseForge page is on its way.
 
-Older versions (1.21.1 and newer) are planned once the 26.3 version settles.
+Each release has a Fabric and a NeoForge jar and covers a range of Minecraft versions — pick the one that matches
+your game:
+
+| Minecraft | Release | Java |
+|---|---|---|
+| 26.3 | [v0.1.0+26.3](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B26.3) | 25 |
+| 26.2 | [v0.1.0+26.2](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B26.2) | 25 |
+| 26.1 – 26.1.2 | [v0.1.0+26.1.2](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B26.1.2) | 25 |
+| 1.21.11 | [v0.1.0+1.21.11](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B1.21.11) | 21 |
+| 1.21.9 – 1.21.10 | [v0.1.0+1.21.10](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B1.21.10) | 21 |
+| 1.21.6 – 1.21.8 | [v0.1.0+1.21.8](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B1.21.8) | 21 |
+| 1.21.5 | [v0.1.0+1.21.5](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B1.21.5) | 21 |
+| 1.21.4 | [v0.1.0+1.21.4](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B1.21.4) | 21 |
+| 1.21.2 – 1.21.3 | [v0.1.0+1.21.3](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B1.21.3) | 21 |
+| 1.21 – 1.21.1 | [v0.1.0+1.21.1](https://github.com/ifoxp/QuickStack-Minecraft/releases/tag/v0.1.0%2B1.21.1) | 21 |
 
 ## Settings
 
@@ -159,7 +173,8 @@ Spotted a clumsy translation? Issues and pull requests are welcome — the files
 
 ## Building from source
 
-Minecraft 26.3 needs **Java 25**.
+`main` targets Minecraft 26.3 and needs **Java 25**; the older ranges live on the `mc/<version>` branches (Java 25
+for 26.x, Java 21 for 1.21.x).
 
 ```sh
 ./gradlew build -x javadoc                 # jars in fabric/build/libs and neoforge/build/libs
