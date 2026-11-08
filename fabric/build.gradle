@@ -29,6 +29,13 @@ fabricApi {
     }
 }
 
+// ./gradlew :fabric:runClientGameTest -Pshowcase records the GIF frames for the mod page instead of testing.
+if (project.hasProperty('showcase')) {
+    loom.runs.matching { it.name == 'clientGameTest' }.configureEach {
+        vmArg '-Dquickstack.showcase=true'
+    }
+}
+
 loom {
     def aw = project(':common').file("src/main/resources/${mod_id}.accesswidener")
     if (aw.exists()) {

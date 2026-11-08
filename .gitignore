@@ -22,3 +22,7 @@ build
 eclipse
 run
 runs
+
+# python
+__pycache__/
+*.pyc

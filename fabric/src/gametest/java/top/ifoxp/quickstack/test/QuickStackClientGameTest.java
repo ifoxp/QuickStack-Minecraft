@@ -68,6 +68,9 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
 
     @Override
     public void runTest(ClientGameTestContext context) {
+        if (Boolean.getBoolean("quickstack.showcase")) {
+            return; // recording the GIFs instead (QuickStackShowcase)
+        }
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             world.getConnection().waitForChunksRender();
             TestServerContext server = world.getServer();
