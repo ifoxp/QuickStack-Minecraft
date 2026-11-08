@@ -95,7 +95,7 @@ public final class Transfer {
      * main rows, then the hotbar. Whatever does not fit stays in {@code stack}.
      */
     public static void insertIntoPlayer(Inventory inventory, ItemStack stack) {
-        List<ItemStack> items = inventory.getNonEquipmentItems();
+        List<ItemStack> items = inventory.items;
         for (int i = 0; i < items.size() && !stack.isEmpty(); i++) {
             ItemStack existing = items.get(i);
             if (!existing.isEmpty() && ItemStack.isSameItemSameComponents(existing, stack)) {

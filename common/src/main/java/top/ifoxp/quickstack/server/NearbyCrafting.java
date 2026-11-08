@@ -71,7 +71,7 @@ public final class NearbyCrafting {
                 for (int i = 0; i < container.getContainerSize(); i++) {
                     ItemStack stack = container.getItem(i);
                     if (!stack.isEmpty() && Inventory.isUsableForCrafting(stack)) {
-                        counts.merge(stack.typeHolder(), stack.getCount(), Integer::sum);
+                        counts.merge(stack.getItemHolder(), stack.getCount(), Integer::sum);
                     }
                 }
             }
@@ -160,12 +160,12 @@ public final class NearbyCrafting {
     private static void lend(ServerPlayer player, ContainerTarget target, ItemStack part) {
         List<Loan> loans = LOANS.computeIfAbsent(player.getUUID(), id -> new ArrayList<>());
         for (Loan loan : loans) {
-            if (loan.pos.equals(target.pos()) && loan.level == player.level() && ItemStack.isSameItemSameComponents(loan.kind, part)) {
+            if (loan.pos.equals(target.pos()) && loan.level == player.serverLevel() && ItemStack.isSameItemSameComponents(loan.kind, part)) {
                 loan.count += part.getCount();
                 return;
             }
         }
-        loans.add(new Loan(player.level(), target.pos(), part.copyWithCount(1), part.getCount()));
+        loans.add(new Loan(player.serverLevel(), target.pos(), part.copyWithCount(1), part.getCount()));
     }
 
     public static boolean hasLoans(ServerPlayer player) {

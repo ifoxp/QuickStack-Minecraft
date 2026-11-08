@@ -54,6 +54,32 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
 - Showcase recorder (QuickStackShowcase, ShowcaseOverlay, `-Pshowcase`, tools/make_media.py) removed on this branch.
 - Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8 mixin targets), client gametest 45/45.
 
+## 1.21.4 (branch `mc/1.21.4`, ported from `mc/26.2` 2026-11-08)
+- Minecraft 1.21.4 (obfuscated), Java 21 (`%USERPROFILE%\.jdks\jdk-21.0.13+9`). Fabric Loader 0.20.1, Fabric API
+  0.119.4+1.21.4, Mod Menu 13.0.4, NeoForge 21.4.161, NeoForm 1.21.4-20241203.161809. Gradle 9.9.0, remapping Loom
+  `fabric-loom` 1.17.21 (newest that runs on Java 21) with official Mojang mappings, ModDevGradle 2.0.148.
+  No refmap: Loom 1.17 remaps mixin strings in remapJar. `sponge-mixin` is compileOnly non-transitive in common
+  (its ASM 9.8 clashes with the ASM 9.6 that 1.21.4 pins). Sources: `E:\Programing\GamesProjects\Minecraft\mc-src-1.21.4\`.
+- API differences from 26.2:
+  - `ResourceLocation`, `EntityType.ITEM`, `minecraft.screen` / `minecraft.setScreen`, `ItemStack.getItemHolder()`,
+    `Inventory.items`, `displayClientMessage(text, true)`, `ServerPlayer.serverLevel()`, item stream codec
+    `ByteBufCodecs.holderRegistry(Registries.ITEM)`; jspecify is not on the classpath (annotations dropped);
+  - GUI: `GuiGraphics` + `render*` (`renderWidget`, `renderSlot(GuiGraphics, Slot)`, `render`, `renderBackground`),
+    `blit(RenderType::guiTextured, ...)`, `PoseStack` with z: lock marks at z 310 (over the item and its count), faded
+    search entries and counts at z 200; tooltips via `renderComponentTooltip`; `CycleButton.builder(f).withInitialValue(v)`;
+  - input: raw `mouseClicked(x, y, button)` / `mouseDragged` / `mouseReleased` / `keyPressed(key, scan, mods)`,
+    `KeyMapping.matches(key, scan)`, `Screen.hasShiftDown()/hasAltDown()` (vanilla reads Shift from the keyboard too, so
+    the sweep's first slot is always vanilla's), `ClickType`; key category is a translation-key string;
+  - `LidEvent`: chests use `ChestBlockEntity.getOpenCount`, shulkers/barrels look for a player whose open menu holds
+    the container (opener lists are private), chest sounds are `SoundEvents.CHEST_OPEN/CLOSE`;
+  - recipe book: same as 26.x (1.21.2 rewrite), mixins unchanged;
+  - Fabric: `KeyBindingHelper`, `PayloadTypeRegistry.playC2S()/playS2C()`; NeoForge: client payload handlers passed to
+    `playToClient(type, codec, handler)` through a client-set consumer, `PacketDistributor.sendToServer`,
+    `FMLLoader.isProduction()`, no key category registration, attachments `serialize(codec.fieldOf(..).codec())`.
+  - client gametest API 4.1.1: no `getConnection()`/`waitFor*boundPackets`/`lookAt` - `getClientWorld()`, a 3-tick
+    wait and a client-side rotation instead; `resizeDisplay()` instead of `resizeGui()`.
+- Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8 mixin targets), client gametest 45/45.
+
 ## Log
 - 2026-11-08: template → QuickStack, all features written, both loaders compile. First client gametest run.
 - 2026-11-08: user feedback round 1. Lock marks made subtle (small faded padlock). Crafting from nearby now keeps

@@ -48,11 +48,11 @@ public class QuickStackFabric implements ModInitializer {
     }
 
     private static <T extends CustomPacketPayload> void registerClientBound(Network.ClientBound<T> entry) {
-        PayloadTypeRegistry.clientboundPlay().register(entry.type(), entry.codec());
+        PayloadTypeRegistry.playS2C().register(entry.type(), entry.codec());
     }
 
     private static <T extends CustomPacketPayload> void registerServerBound(Network.ServerBound<T> entry) {
-        PayloadTypeRegistry.serverboundPlay().register(entry.type(), entry.codec());
+        PayloadTypeRegistry.playC2S().register(entry.type(), entry.codec());
         ServerPlayNetworking.registerGlobalReceiver(entry.type(),
                 (payload, context) -> entry.handler().handle(payload, context.player()));
     }

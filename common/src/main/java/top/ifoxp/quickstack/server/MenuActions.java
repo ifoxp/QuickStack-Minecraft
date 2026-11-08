@@ -165,7 +165,7 @@ public final class MenuActions {
     private static void restock(ServerPlayer player, List<Slot> containerSlots, int keep) {
         Inventory inventory = player.getInventory();
         List<ItemStack> wanted = new ArrayList<>();
-        for (ItemStack carried : inventory.getNonEquipmentItems()) {
+        for (ItemStack carried : inventory.items) {
             if (!carried.isEmpty() && wanted.stream().noneMatch(w -> ItemStack.isSameItemSameComponents(w, carried))) {
                 wanted.add(carried.copyWithCount(1));
             }
@@ -276,6 +276,6 @@ public final class MenuActions {
             Services.PLATFORM.setExcluded(part, excluded);
             part.setChanged();
         }
-        player.sendOverlayMessage(Component.translatable(excluded ? "quickstack.message.excluded" : "quickstack.message.included"));
+        player.displayClientMessage(Component.translatable(excluded ? "quickstack.message.excluded" : "quickstack.message.included"), true);
     }
 }

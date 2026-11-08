@@ -3,6 +3,7 @@ package top.ifoxp.quickstack.network;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -14,6 +15,9 @@ import top.ifoxp.quickstack.QuickStack;
 
 /** Every packet QuickStack sends. C2S = client to server, S2C = server to client. */
 public final class Payloads {
+
+    /** An item by registry id ({@code Item.STREAM_CODEC} from 1.21.5). */
+    private static final StreamCodec<RegistryFriendlyByteBuf, Holder<Item>> ITEM_CODEC = ByteBufCodecs.holderRegistry(Registries.ITEM);
 
     private Payloads() {
     }
@@ -88,7 +92,7 @@ public final class Payloads {
         public static final int MAX = 512;
         public static final Type<FindItems> TYPE = typeOf("find_items");
         public static final StreamCodec<RegistryFriendlyByteBuf, FindItems> CODEC = StreamCodec.composite(
-                Item.STREAM_CODEC.apply(ByteBufCodecs.list(MAX)), FindItems::items, FindItems::new);
+                ITEM_CODEC.apply(ByteBufCodecs.list(MAX)), FindItems::items, FindItems::new);
 
         @Override
         public Type<FindItems> type() {
@@ -174,7 +178,7 @@ public final class Payloads {
 
     public record NearbyCount(Holder<Item> item, int count) {
         public static final StreamCodec<RegistryFriendlyByteBuf, NearbyCount> CODEC = StreamCodec.composite(
-                Item.STREAM_CODEC, NearbyCount::item,
+                ITEM_CODEC, NearbyCount::item,
                 ByteBufCodecs.VAR_INT, NearbyCount::count,
                 NearbyCount::new);
     }

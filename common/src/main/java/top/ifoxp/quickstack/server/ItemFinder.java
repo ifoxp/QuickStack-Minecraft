@@ -34,7 +34,7 @@ public final class ItemFinder {
             for (int i = 0; i < container.getContainerSize(); i++) {
                 ItemStack stack = container.getItem(i);
                 if (!stack.isEmpty()) {
-                    totals.merge(stack.typeHolder(), stack.getCount(), Integer::sum);
+                    totals.merge(stack.getItemHolder(), stack.getCount(), Integer::sum);
                 }
             }
         }
@@ -62,10 +62,10 @@ public final class ItemFinder {
             }
         }
         if (found.isEmpty()) {
-            player.sendOverlayMessage(Component.translatable("quickstack.message.not_found"));
+            player.displayClientMessage(Component.translatable("quickstack.message.not_found"), true);
             return;
         }
         Services.PLATFORM.sendToPlayer(player, new Payloads.Highlight(found, HIGHLIGHT_TICKS, true));
-        player.sendOverlayMessage(Component.translatable("quickstack.message.found", found.size()));
+        player.displayClientMessage(Component.translatable("quickstack.message.found", found.size()), true);
     }
 }

@@ -28,7 +28,7 @@ public final class ServerEvents {
     }
 
     public static void onPlayerLeave(ServerPlayer player) {
-        QuickStackManager.flush(player.level().getServer(), player.getUUID());
+        QuickStackManager.flush(player.serverLevel().getServer(), player.getUUID());
         NearbyCrafting.forget(player.getUUID());
     }
 

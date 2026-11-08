@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -14,7 +14,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import org.jspecify.annotations.Nullable;
 import top.ifoxp.quickstack.client.QuickStackClient;
 import top.ifoxp.quickstack.config.ClientConfig;
 import top.ifoxp.quickstack.config.ServerConfig;
@@ -32,11 +31,11 @@ public class ConfigScreen extends Screen {
     private static final int HEIGHT = 20;
     private static final int ROW = 22;
 
-    private final @Nullable Screen parent;
+    private final Screen parent;
     /** Showing the world (server) settings instead of the player's own. */
     private boolean serverPage;
 
-    public ConfigScreen(@Nullable Screen parent) {
+    public ConfigScreen(Screen parent) {
         super(Component.translatable("quickstack.config.title"));
         this.parent = parent;
     }
@@ -103,23 +102,26 @@ public class ConfigScreen extends Screen {
         list.add(toggle("quickstack.config.inventory_buttons", client.showInventoryButtons,
                 value -> client.showInventoryButtons = value));
         list.add(CycleButton.<ClientConfig.ButtonPlacement>builder(
-                        placement -> Component.translatable(placement.translationKey()), client.buttonPlacement)
+                        placement -> Component.translatable(placement.translationKey()))
                 .withValues(ClientConfig.ButtonPlacement.values())
+                .withInitialValue(client.buttonPlacement)
                 .create(0, 0, WIDTH, HEIGHT, Component.translatable("quickstack.config.button_placement"),
                         (button, value) -> client.buttonPlacement = value));
         list.add(toggle("quickstack.config.container_buttons", client.showContainerButtons,
                 value -> client.showContainerButtons = value));
         list.add(toggle("quickstack.config.middle_click_sort", client.middleClickSort,
                 value -> client.middleClickSort = value));
-        list.add(CycleButton.<SortMode>builder(mode -> Component.translatable(mode.translationKey()), client.sortMode)
+        list.add(CycleButton.<SortMode>builder(mode -> Component.translatable(mode.translationKey()))
                 .withValues(SortMode.values())
+                .withInitialValue(client.sortMode)
                 .create(0, 0, WIDTH, HEIGHT, Component.translatable("quickstack.config.sort_mode"),
                         (button, value) -> client.sortMode = value));
         list.add(toggle("quickstack.config.craft_nearby_client", client.craftFromNearby,
                 value -> client.craftFromNearby = value));
         list.add(CycleButton.<ClientConfig.ShiftDrag>builder(
-                        mode -> Component.translatable(mode.translationKey()), client.shiftDrag)
+                        mode -> Component.translatable(mode.translationKey()))
                 .withValues(ClientConfig.ShiftDrag.values())
+                .withInitialValue(client.shiftDrag)
                 .create(0, 0, WIDTH, HEIGHT, Component.translatable("quickstack.config.shift_drag"),
                         (button, value) -> client.shiftDrag = value));
         list.add(toggle("quickstack.config.scroll_pick", client.scrollPickAmount,
@@ -163,9 +165,9 @@ public class ConfigScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-        super.extractRenderState(graphics, mouseX, mouseY, a);
-        graphics.centeredText(font, title, width / 2, 12, 0xFFFFFFFF);
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float a) {
+        super.render(graphics, mouseX, mouseY, a);
+        graphics.drawCenteredString(font, title, width / 2, 12, 0xFFFFFFFF);
     }
 
     @Override
@@ -174,7 +176,7 @@ public class ConfigScreen extends Screen {
         if (editsServer()) {
             ServerConfig.save();
         }
-        minecraft.gui.setScreen(parent);
+        minecraft.setScreen(parent);
     }
 
     private static final class IntSlider extends AbstractSliderButton {

@@ -1,15 +1,13 @@
 package top.ifoxp.quickstack.client.ui;
 
 import java.util.function.IntSupplier;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.input.InputWithModifiers;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import top.ifoxp.quickstack.QuickStack;
 
 /**
@@ -18,7 +16,7 @@ import top.ifoxp.quickstack.QuickStack;
  */
 public class IconButton extends AbstractButton {
 
-    public static final Identifier ICONS = QuickStack.id("textures/gui/icons.png");
+    public static final ResourceLocation ICONS = QuickStack.id("textures/gui/icons.png");
     public static final int SIZE = 10;
     private static final int ATLAS_WIDTH = 128;
     private static final int ATLAS_HEIGHT = 16;
@@ -47,18 +45,18 @@ public class IconButton extends AbstractButton {
     }
 
     @Override
-    public void onPress(InputWithModifiers input) {
+    public void onPress() {
         action.run();
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         reposition();
-        return super.mouseClicked(event, doubleClick);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+    protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float a) {
         reposition();
         int x = getX();
         int y = getY();
@@ -68,13 +66,13 @@ public class IconButton extends AbstractButton {
         drawIcon(graphics, icon, x + 1, y + 1);
     }
 
-    public static void drawIcon(GuiGraphicsExtractor graphics, Icon icon, int x, int y) {
+    public static void drawIcon(GuiGraphics graphics, Icon icon, int x, int y) {
         drawIcon(graphics, icon, x, y, 0xFFFFFFFF);
     }
 
     /** {@code color} is ARGB; its alpha fades the icon. */
-    public static void drawIcon(GuiGraphicsExtractor graphics, Icon icon, int x, int y, int color) {
-        graphics.blit(RenderPipelines.GUI_TEXTURED, ICONS, x, y, icon.u(), 0, 8, 8, ATLAS_WIDTH, ATLAS_HEIGHT, color);
+    public static void drawIcon(GuiGraphics graphics, Icon icon, int x, int y, int color) {
+        graphics.blit(RenderType::guiTextured, ICONS, x, y, icon.u(), 0, 8, 8, ATLAS_WIDTH, ATLAS_HEIGHT, color);
     }
 
     @Override

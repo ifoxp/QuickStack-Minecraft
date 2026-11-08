@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -103,9 +103,9 @@ public final class ScreenButtons {
         if (full) {
             specs.add(new Spec(IconButton.Icon.FIND,
                     withKey(Component.translatable("quickstack.button.find"), QuickStackClient.FIND),
-                    () -> Minecraft.getInstance().gui.setScreen(new FindItemScreen(null))));
+                    () -> Minecraft.getInstance().setScreen(new FindItemScreen(null))));
             specs.add(new Spec(IconButton.Icon.CONFIG, Component.translatable("quickstack.button.config"),
-                    () -> Minecraft.getInstance().gui.setScreen(new ConfigScreen(Minecraft.getInstance().gui.screen()))));
+                    () -> Minecraft.getInstance().setScreen(new ConfigScreen(Minecraft.getInstance().screen))));
         }
         return specs;
     }
@@ -135,7 +135,7 @@ public final class ScreenButtons {
     }
 
     /** Vanilla panel colours; the bottom runs 3 px into the window so it merges with its top border. */
-    private static void drawTab(GuiGraphicsExtractor graphics, int x, int y, int w) {
+    private static void drawTab(GuiGraphics graphics, int x, int y, int w) {
         int bottom = y + TAB_HEIGHT;
         graphics.fill(x, y, x + w, bottom, 0xFF000000);
         graphics.fill(x + 1, y + 1, x + w - 1, bottom, 0xFFC6C6C6);
@@ -197,11 +197,15 @@ public final class ScreenButtons {
     }
 
     /** Called after vanilla drew a slot (coordinates are relative to the screen's image). */
-    public static void drawSlotOverlay(GuiGraphicsExtractor graphics, Slot slot) {
+    public static void drawSlotOverlay(GuiGraphics graphics, Slot slot) {
         if (!isLockableSlot(slot) || !ClientState.isLocked(slot.getContainerSlot()) || !QuickStackClient.serverHasMod()) {
             return;
         }
         // Kept quiet on purpose: a small faded padlock in the corner, no frame or tint over the item.
+        // Lifted above the slot's item and count (drawn at z 100 + 200), below the carried item and tooltips.
+        graphics.pose().pushPose();
+        graphics.pose().translate(0.0F, 0.0F, 310.0F);
         IconButton.drawIcon(graphics, IconButton.Icon.SMALL_LOCK, slot.x - 1, slot.y - 1, LOCK_MARK_COLOR);
+        graphics.pose().popPose();
     }
 }
