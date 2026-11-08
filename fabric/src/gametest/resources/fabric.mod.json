@@ -2,15 +2,15 @@
     "schemaVersion": 1,
     "id": "quickstack-test",
     "version": "1.0.0",
-    "name": "QuickStack client gametests",
-    "environment": "client",
+    "name": "QuickStack server gametests",
+    "environment": "*",
     "entrypoints": {
-        "fabric-client-gametest": [
-            "top.ifoxp.quickstack.test.QuickStackClientGameTest"
+        "fabric-gametest": [
+            "top.ifoxp.quickstack.test.QuickStackServerGameTest"
         ]
     },
     "depends": {
         "quickstack": "*",
-        "fabric-client-gametest-api-v1": "*"
+        "fabric-gametest-api-v1": "*"
     }
 }

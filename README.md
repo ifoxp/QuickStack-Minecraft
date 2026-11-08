@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img alt="Minecraft 1.21.4" src="https://img.shields.io/badge/Minecraft-1.21.4-62B47A?style=flat-square">
+  <img alt="Minecraft 1.21.2–1.21.3" src="https://img.shields.io/badge/Minecraft-1.21.2%E2%80%931.21.3-62B47A?style=flat-square">
   <img alt="Fabric" src="https://img.shields.io/badge/Fabric-supported-DBD0B4?style=flat-square">
   <img alt="NeoForge" src="https://img.shields.io/badge/NeoForge-supported-E36D29?style=flat-square">
   <img alt="26 languages" src="https://img.shields.io/badge/languages-26-4C8BF5?style=flat-square">
@@ -107,7 +107,7 @@ All keys can be changed in *Options → Controls → QuickStack*.
 
 | | |
 |---|---|
-| Minecraft | **1.21.4** |
+| Minecraft | **1.21.2 – 1.21.3** |
 | Loader | **Fabric** (with [Fabric API](https://modrinth.com/mod/fabric-api)) or **NeoForge** |
 | Side | **client and server** — singleplayer works out of the box |
 | Optional | [Mod Menu](https://modrinth.com/mod/modmenu) (Fabric) for the settings button in the mod list |
@@ -159,17 +159,17 @@ Spotted a clumsy translation? Issues and pull requests are welcome — the files
 
 ## Building from source
 
-Minecraft 1.21.4 needs **Java 21**.
+Minecraft 1.21.2 – 1.21.3 needs **Java 21**.
 
 ```sh
 ./gradlew build -x javadoc                 # jars in fabric/build/libs and neoforge/build/libs
 ./gradlew :fabric:runClient                # dev client
-./gradlew :fabric:runClientGameTest        # 45 scripted checks in a real client
+./gradlew :fabric:runGameTest              # 36 server-side checks (client gametests exist from 1.21.4)
 ```
 
 The project follows the MultiLoader layout: `common/` holds all the logic, `fabric/` and `neoforge/` are thin
-loader adapters (events, networking, saved data). The client gametests in `fabric/src/gametest` play the features
-with real mouse clicks and keys, check the result on the server and include the 2 352-chest stress test.
+loader adapters (events, networking, saved data). The server gametest in `fabric/src/gametest` drives the features
+through the same server entry points the mod's packets use and includes the 32-chest load test.
 
 ## License
 

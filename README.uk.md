@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img alt="Minecraft 1.21.4" src="https://img.shields.io/badge/Minecraft-1.21.4-62B47A?style=flat-square">
+  <img alt="Minecraft 1.21.2–1.21.3" src="https://img.shields.io/badge/Minecraft-1.21.2%E2%80%931.21.3-62B47A?style=flat-square">
   <img alt="Fabric" src="https://img.shields.io/badge/Fabric-підтримується-DBD0B4?style=flat-square">
   <img alt="NeoForge" src="https://img.shields.io/badge/NeoForge-підтримується-E36D29?style=flat-square">
   <img alt="26 мов" src="https://img.shields.io/badge/мов-26-4C8BF5?style=flat-square">
@@ -105,7 +105,7 @@
 
 | | |
 |---|---|
-| Minecraft | **1.21.4** |
+| Minecraft | **1.21.2 – 1.21.3** |
 | Завантажувач | **Fabric** (з [Fabric API](https://modrinth.com/mod/fabric-api)) або **NeoForge** |
 | Де ставити | **і клієнт, і сервер** — в одиночній грі працює одразу |
 | Необов'язково | [Mod Menu](https://modrinth.com/mod/modmenu) (Fabric) — кнопка налаштувань у списку модів |
@@ -157,17 +157,17 @@ Latviešu, Eesti, Română, Монгол.
 
 ## Збирання з коду
 
-Minecraft 1.21.4 потребує **Java 21**.
+Minecraft 1.21.2 – 1.21.3 потребує **Java 21**.
 
 ```sh
 ./gradlew build -x javadoc                 # jar-файли в fabric/build/libs і neoforge/build/libs
 ./gradlew :fabric:runClient                # клієнт для розробки
-./gradlew :fabric:runClientGameTest        # 45 сценарних перевірок у справжньому клієнті
+./gradlew :fabric:runGameTest              # 36 серверних перевірок (клієнтські gametest-и є з 1.21.4)
 ```
 
 Проєкт побудований за схемою MultiLoader: `common/` містить усю логіку, а `fabric/` і `neoforge/` — тонкі адаптери
-під завантажувачі (події, мережа, збереження даних). Клієнтські gametest-и у `fabric/src/gametest` проходять усі
-функції справжніми кліками й клавішами, перевіряють результат на сервері й містять стрес-тест на 2 352 скрині.
+під завантажувачі (події, мережа, збереження даних). Серверний gametest у `fabric/src/gametest` проходить усі
+функції через ті самі серверні точки входу, що й пакети мода, і містить навантажувальний тест на 32 скрині.
 
 ## Ліцензія
 

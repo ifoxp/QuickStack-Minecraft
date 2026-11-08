@@ -80,6 +80,22 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
     wait and a client-side rotation instead; `resizeDisplay()` instead of `resizeGui()`.
 - Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8 mixin targets), client gametest 45/45.
 
+## 1.21.2 – 1.21.3 (branch `mc/1.21.3`, ported from `mc/1.21.4` 2026-11-08)
+- Minecraft 1.21.3 (range 1.21.2 – 1.21.3), Java 21. Fabric Loader 0.20.1, Fabric API 0.114.1+1.21.3, Mod Menu 12.0.1,
+  NeoForge 21.3.100, NeoForm 1.21.3-20241023.131943. Tooling as on `mc/1.21.4`.
+  Sources: `E:\Programing\GamesProjects\Minecraft\mc-src-1.21.3\`.
+- API differences from 1.21.4:
+  - `Inventory.findSlotMatchingCraftingIngredient(Holder<Item>)` has no grid-stack argument (`ServerPlaceRecipeMixin`);
+  - Fabric API for 1.21.2 (0.106.1) has no `AttachmentRegistry.create(id, builder)`: attachments use the
+    `AttachmentRegistry.builder()...buildAndRegister(id)` form, present in both;
+  - no client gametest API: `QuickStackServerGameTest` (fabric-gametest-api-v1, `./gradlew :fabric:runGameTest`) runs
+    the server side of the scenarios with a mock player through the entry points the packets call (quick stack
+    landing, lock + inventory sort, restock / deposit / sort / middle-click sort / exclude, wheel moves, crafting
+    placement from a nearby chest with loans returned on close and leftovers after max placement, undo, 32-chest load).
+    Client-only checks (Alt+click, shift sweep, screens, highlights, GUI scale) are not covered: 36 checks.
+- Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8), server gametest 36/36, Fabric self-check also on
+  1.21.2 (Fabric API 0.106.1+1.21.2) OK.
+
 ## Log
 - 2026-11-08: template → QuickStack, all features written, both loaders compile. First client gametest run.
 - 2026-11-08: user feedback round 1. Lock marks made subtle (small faded padlock). Crafting from nearby now keeps

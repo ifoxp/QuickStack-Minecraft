@@ -21,12 +21,12 @@ dependencies {
 }
 
 fabricApi {
-    // Client gametests: a real client plays scripted scenarios (./gradlew :fabric:runClientGameTest).
+    // Server gametests (./gradlew :fabric:runGameTest); client gametests only exist from Minecraft 1.21.4.
     configureTests {
         createSourceSet = true
         modId = 'quickstack-test'
-        enableGameTests = false
-        enableClientGameTests = true
+        enableGameTests = true
+        enableClientGameTests = false
     }
 }
 

@@ -56,7 +56,7 @@ public abstract class ServerPlaceRecipeMixin {
     @Inject(method = "moveItemToGrid", at = @At("HEAD"), cancellable = true)
     private void quickstack$pullFromNearby(Slot targetSlot, Holder<Item> item, int count, CallbackInfoReturnable<Integer> cir) {
         ItemStack inGrid = targetSlot.getItem();
-        if (inventory.findSlotMatchingCraftingIngredient(item, inGrid) != -1) {
+        if (inventory.findSlotMatchingCraftingIngredient(item) != -1) {
             return; // vanilla takes it from the inventory first
         }
         ItemStack taken = NearbyCrafting.pull(inventory.player, item, inGrid, count);

@@ -17,13 +17,17 @@ import top.ifoxp.quickstack.server.ServerEvents;
 
 public class QuickStackFabric implements ModInitializer {
 
+    // AttachmentRegistry.builder(): the only form in Fabric API for 1.21.2 (create(id, consumer) came later).
+
     /** Locked inventory slots, saved with the player and kept on death. */
-    public static final AttachmentType<Long> LOCKS = AttachmentRegistry.create(QuickStack.id("locks"),
-            builder -> builder.persistent(Codec.LONG).copyOnDeath().initializer(() -> LockManager.DEFAULT_MASK));
+    @SuppressWarnings("deprecation")
+    public static final AttachmentType<Long> LOCKS = AttachmentRegistry.<Long>builder()
+            .persistent(Codec.LONG).copyOnDeath().initializer(() -> LockManager.DEFAULT_MASK).buildAndRegister(QuickStack.id("locks"));
 
     /** Set on a container block entity that quick stack to nearby containers must skip. */
-    public static final AttachmentType<Boolean> EXCLUDED = AttachmentRegistry.create(QuickStack.id("excluded"),
-            builder -> builder.persistent(Codec.BOOL));
+    @SuppressWarnings("deprecation")
+    public static final AttachmentType<Boolean> EXCLUDED = AttachmentRegistry.<Boolean>builder()
+            .persistent(Codec.BOOL).buildAndRegister(QuickStack.id("excluded"));
 
     @Override
     public void onInitialize() {
