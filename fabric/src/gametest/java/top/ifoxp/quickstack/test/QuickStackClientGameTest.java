@@ -68,9 +68,6 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
 
     @Override
     public void runTest(ClientGameTestContext context) {
-        if (Boolean.getBoolean("quickstack.showcase")) {
-            return; // recording the GIFs instead (QuickStackShowcase)
-        }
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             world.getConnection().waitForChunksRender();
             TestServerContext server = world.getServer();
@@ -715,7 +712,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         clickAt(context, guiX, guiY, InputConstants.MOUSE_BUTTON_LEFT);
     }
 
-    /** Mouse buttons are SDL numbers since 26.1: left = 1, middle = 2, right = 3. */
+    /** Mouse buttons are GLFW numbers in 26.2: left = 0, right = 1, middle = 2 (InputConstants.MOUSE_BUTTON_*). */
     private static void clickAt(ClientGameTestContext context, double guiX, double guiY, int button) {
         double scale = context.computeOnClient(mc -> (double) mc.getWindow().getScreenWidth() / mc.getWindow().getGuiScaledWidth());
         context.getInput().setCursorPos(guiX * scale, guiY * scale);

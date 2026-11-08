@@ -41,6 +41,19 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
 - Mouse/keys arrive as `MouseButtonEvent` / `KeyEvent` records (`hasAltDown()`, `isConfirmation()`).
 - NeoForge client payload handlers: `RegisterClientPayloadHandlersEvent`; server side registers `playToClient(type, codec)` only.
 
+## 26.2 (branch `mc/26.2`, ported from `main` 2026-11-08)
+- Minecraft 26.2, Java 25. Fabric Loader 0.20.1, Fabric API 0.161.0+26.2, Mod Menu 20.0.3, NeoForge 26.2.0.93,
+  NeoForm 26.2-2. Tooling as on `main`: Gradle 9.9.0, Loom 1.19.4, ModDevGradle 2.0.148 (template branch `26.2` build
+  files are identical to `26.3` apart from older plugin versions). Sources: `E:\Programing\GamesProjects\Minecraft\mc-src-26.2\`.
+- API differences from 26.3:
+  - no `net.minecraft.util.Prediction`: `Inventory.placeItemBackInInventory(stack)` / `(stack, sendPacket)`
+    (`QuickStackManager`, `ServerPlaceRecipeMixin` clearGrid target `placeItemBackInInventory(ItemStack;Z)V`);
+  - input is still GLFW: mouse buttons left/right/middle = 0/1/2, GLFW key codes, `KeyMapping` `Type.KEYSYM`.
+    The code only uses `InputConstants.*` names, so only comments changed; container click buttons equal mouse buttons;
+  - `ClientLevel.tickNonPassenger` calls `setOldPosAndRot()` itself (26.3: `Entity.commonTick()`), flying items unchanged.
+- Showcase recorder (QuickStackShowcase, ShowcaseOverlay, `-Pshowcase`, tools/make_media.py) removed on this branch.
+- Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8 mixin targets), client gametest 45/45.
+
 ## Log
 - 2026-11-08: template → QuickStack, all features written, both loaders compile. First client gametest run.
 - 2026-11-08: user feedback round 1. Lock marks made subtle (small faded padlock). Crafting from nearby now keeps

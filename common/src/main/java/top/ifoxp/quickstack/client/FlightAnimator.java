@@ -107,7 +107,7 @@ public final class FlightAnimator {
         ItemEntity entity = new ItemEntity(EntityTypes.ITEM, level) {
             @Override
             public void tick() {
-                // Positions come from FlightAnimator; commonTick() already keeps the previous position for interpolation.
+                // Positions come from FlightAnimator; ClientLevel.tickNonPassenger already keeps the previous position for interpolation.
             }
 
             @Override

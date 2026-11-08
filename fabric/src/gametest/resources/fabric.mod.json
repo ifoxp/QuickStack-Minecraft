@@ -6,8 +6,7 @@
     "environment": "client",
     "entrypoints": {
         "fabric-client-gametest": [
-            "top.ifoxp.quickstack.test.QuickStackClientGameTest",
-            "top.ifoxp.quickstack.test.QuickStackShowcase"
+            "top.ifoxp.quickstack.test.QuickStackClientGameTest"
         ]
     },
     "depends": {

@@ -192,7 +192,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
         if (slot == null || minecraft.player == null || !menu.getCarried().isEmpty() || !QuickStackClient.serverHasMod()) {
             return;
         }
-        // Mouse buttons are SDL numbers since 26.1 (left = 1). The event's modifiers can miss a held Alt, so ask the keyboard too.
+        // Mouse buttons are GLFW numbers in 26.2 (left = 0). The event's modifiers can miss a held Alt, so ask the keyboard too.
         boolean alt = event.hasAltDown() || minecraft.hasAltDown();
         if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && alt && ScreenButtons.isLockableSlot(slot)) {
             QuickStackClient.toggleLock(slot.getContainerSlot());

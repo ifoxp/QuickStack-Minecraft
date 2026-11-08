@@ -29,15 +29,6 @@ fabricApi {
     }
 }
 
-// ./gradlew :fabric:runClientGameTest -Pshowcase [-Pclips=quick_stack,wheel] records the mod page clips instead of testing.
-if (project.hasProperty('showcase')) {
-    loom.runs.matching { it.name == 'clientGameTest' }.configureEach {
-        vmArg '-Dquickstack.showcase=true'
-        vmArg "-Dquickstack.showcase.clips=${project.findProperty('clips') ?: ''}"
-        vmArg "-Dquickstack.showcase.dir=${rootProject.file('build/showcase').absolutePath}"
-    }
-}
-
 loom {
     def aw = project(':common').file("src/main/resources/${mod_id}.accesswidener")
     if (aw.exists()) {

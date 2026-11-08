@@ -16,7 +16,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Prediction;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -245,7 +244,7 @@ public final class QuickStackManager {
     private static void giveBack(MinecraftServer server, UUID playerId, ServerLevel level, BlockPos pos, ItemStack stack) {
         ServerPlayer player = server.getPlayerList().getPlayer(playerId);
         if (player != null && !player.hasDisconnected()) {
-            player.getInventory().placeItemBackInInventory(stack, Prediction.SERVER_ONLY);
+            player.getInventory().placeItemBackInInventory(stack);
         } else {
             Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, stack);
         }
@@ -291,7 +290,7 @@ public final class QuickStackManager {
             Pending pending = it.next();
             if (pending.batchId == batch.id) {
                 it.remove();
-                player.getInventory().placeItemBackInInventory(pending.stack.copy(), Prediction.SERVER_ONLY);
+                player.getInventory().placeItemBackInInventory(pending.stack.copy());
                 cancelledFlights = true;
             }
         }
@@ -309,7 +308,7 @@ public final class QuickStackManager {
                 if (!inside.isEmpty() && ItemStack.isSameItemSameComponents(inside, landed.stack)) {
                     ItemStack taken = target.container().removeItem(i, Math.min(wanted, inside.getCount()));
                     wanted -= taken.getCount();
-                    player.getInventory().placeItemBackInInventory(taken, Prediction.SERVER_ONLY);
+                    player.getInventory().placeItemBackInInventory(taken);
                 }
             }
             target.container().setChanged();
