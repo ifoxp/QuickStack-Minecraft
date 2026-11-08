@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
+import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -14,7 +15,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import org.jspecify.annotations.Nullable;
 import top.ifoxp.quickstack.client.QuickStackClient;
 import top.ifoxp.quickstack.config.ClientConfig;
 import top.ifoxp.quickstack.config.ServerConfig;
@@ -102,8 +102,8 @@ public class ConfigScreen extends Screen {
         list.add(toggle("quickstack.config.highlight", client.highlightTargets, value -> client.highlightTargets = value));
         list.add(toggle("quickstack.config.inventory_buttons", client.showInventoryButtons,
                 value -> client.showInventoryButtons = value));
-        list.add(CycleButton.<ClientConfig.ButtonPlacement>builder(
-                        placement -> Component.translatable(placement.translationKey()), client.buttonPlacement)
+        list.add(CycleButton.<ClientConfig.ButtonPlacement>builder(placement -> Component.translatable(placement.translationKey()))
+                .withInitialValue(client.buttonPlacement)
                 .withValues(ClientConfig.ButtonPlacement.values())
                 .create(0, 0, WIDTH, HEIGHT, Component.translatable("quickstack.config.button_placement"),
                         (button, value) -> client.buttonPlacement = value));
@@ -111,14 +111,15 @@ public class ConfigScreen extends Screen {
                 value -> client.showContainerButtons = value));
         list.add(toggle("quickstack.config.middle_click_sort", client.middleClickSort,
                 value -> client.middleClickSort = value));
-        list.add(CycleButton.<SortMode>builder(mode -> Component.translatable(mode.translationKey()), client.sortMode)
+        list.add(CycleButton.<SortMode>builder(mode -> Component.translatable(mode.translationKey()))
+                .withInitialValue(client.sortMode)
                 .withValues(SortMode.values())
                 .create(0, 0, WIDTH, HEIGHT, Component.translatable("quickstack.config.sort_mode"),
                         (button, value) -> client.sortMode = value));
         list.add(toggle("quickstack.config.craft_nearby_client", client.craftFromNearby,
                 value -> client.craftFromNearby = value));
-        list.add(CycleButton.<ClientConfig.ShiftDrag>builder(
-                        mode -> Component.translatable(mode.translationKey()), client.shiftDrag)
+        list.add(CycleButton.<ClientConfig.ShiftDrag>builder(mode -> Component.translatable(mode.translationKey()))
+                .withInitialValue(client.shiftDrag)
                 .withValues(ClientConfig.ShiftDrag.values())
                 .create(0, 0, WIDTH, HEIGHT, Component.translatable("quickstack.config.shift_drag"),
                         (button, value) -> client.shiftDrag = value));

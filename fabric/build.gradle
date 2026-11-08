@@ -18,6 +18,8 @@ dependencies {
     }
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    // @Nullable in common is javax.annotation (jsr305, a Minecraft 1.21.10 library that Loom leaves off the compile classpath)
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
     // Optional: the config screen shows up in Mod Menu's list when it is installed.
     modCompileOnly("com.terraformersmc:modmenu:${modmenu_version}") { transitive = false }
     modLocalRuntime("com.terraformersmc:modmenu:${modmenu_version}") { transitive = false }

@@ -92,6 +92,24 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
     `ServerPlaceRecipe`, `RecipeBookComponent`, `ClientLevel.tickNonPassenger`.
 - Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8 mixin targets), client gametest 45/45.
 
+## 1.21.9 – 1.21.10 (branch `mc/1.21.10`, ported from `mc/1.21.11` 2026-11-08)
+- One jar per loader for 1.21.9 and 1.21.10, built against 1.21.10. Java 21. Fabric Loader 0.20.1, Fabric API
+  0.138.4+1.21.10, Mod Menu 16.0.1, NeoForge 21.10.64, NeoForm 1.21.10-20251010.172816, Parchment 1.21.10
+  2025.10.12. Tooling as on `mc/1.21.11` (template branch `1.21.10` differs only in older plugin versions).
+  Sources: `E:\Programing\GamesProjects\Minecraft\mc-src-1.21.10\`.
+- Metadata: Fabric `"minecraft": ">=1.21.9 <1.21.11"`; NeoForge `minecraft [1.21.9, 1.21.11)`,
+  `neoforge [21.9.0-beta,)` (21.9.x and 21.10.x builds, which are all betas up to 21.10.62).
+- API differences from 1.21.11:
+  - `Identifier` → `ResourceLocation` (`QuickStack.id`, `IconButton`, `ContainerScanner`, gametest);
+  - nullness annotations are `javax.annotation.Nullable` (jsr305), not jspecify; Fabric compiles with
+    `compileOnly jsr305 3.0.2` because Loom leaves that Minecraft library off the compile classpath;
+  - `CycleButton.builder(stringifier, value)` → `builder(stringifier).withInitialValue(value)` (`ConfigScreen`);
+  - `AbstractButton` has no `renderContents`: `IconButton` overrides `renderWidget` and requests the pointing-hand
+    cursor itself, as 1.21.11's `AbstractButton.handleCursor` does;
+  - `AbstractContainerScreen.renderSlot(GuiGraphics, Slot)` has no mouse arguments (lock-mark injector).
+- Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8), client gametest 45/45; Fabric self-check also on
+  Minecraft 1.21.9 with Fabric API 0.134.1+1.21.9 (classes compiled against 1.21.9 are byte-identical to the 1.21.10 build).
+
 ## Log
 - 2026-11-08: template → QuickStack, all features written, both loaders compile. First client gametest run.
 - 2026-11-08: user feedback round 1. Lock marks made subtle (small faded padlock). Crafting from nearby now keeps

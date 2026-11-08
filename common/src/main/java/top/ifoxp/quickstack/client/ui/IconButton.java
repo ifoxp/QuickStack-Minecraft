@@ -1,5 +1,6 @@
 package top.ifoxp.quickstack.client.ui;
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.function.IntSupplier;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
@@ -9,7 +10,7 @@ import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import top.ifoxp.quickstack.QuickStack;
 
 /**
@@ -18,7 +19,7 @@ import top.ifoxp.quickstack.QuickStack;
  */
 public class IconButton extends AbstractButton {
 
-    public static final Identifier ICONS = QuickStack.id("textures/gui/icons.png");
+    public static final ResourceLocation ICONS = QuickStack.id("textures/gui/icons.png");
     public static final int SIZE = 10;
     private static final int ATLAS_WIDTH = 128;
     private static final int ATLAS_HEIGHT = 16;
@@ -58,7 +59,7 @@ public class IconButton extends AbstractButton {
     }
 
     @Override
-    protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float a) {
+    protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float a) {
         reposition();
         int x = getX();
         int y = getY();
@@ -66,6 +67,10 @@ public class IconButton extends AbstractButton {
         graphics.fill(x, y, x + SIZE, y + SIZE, hot ? 0xFFFFFFFF : 0xFF373737);
         graphics.fill(x + 1, y + 1, x + SIZE - 1, y + SIZE - 1, hot ? 0xFFB5B5B5 : 0xFF8B8B8B);
         drawIcon(graphics, icon, x + 1, y + 1);
+        // The pointing-hand cursor that later versions' AbstractButton adds after the contents.
+        if (isHovered()) {
+            graphics.requestCursor(isActive() ? CursorTypes.POINTING_HAND : CursorTypes.NOT_ALLOWED);
+        }
     }
 
     public static void drawIcon(GuiGraphics graphics, Icon icon, int x, int y) {

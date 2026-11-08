@@ -8,7 +8,7 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -121,7 +121,7 @@ public final class ContainerScanner {
     private static boolean accepts(BlockEntity blockEntity) {
         ServerConfig config = ServerConfig.get();
         if (!config.blockedContainerTypes.isEmpty()) {
-            Identifier typeId = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(blockEntity.getType());
+            ResourceLocation typeId = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(blockEntity.getType());
             if (typeId != null && config.blockedContainerTypes.contains(typeId.toString())) {
                 return false;
             }

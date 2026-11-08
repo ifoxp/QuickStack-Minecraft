@@ -18,7 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -409,7 +409,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         world.getServer().runOnServer(server -> {
             ServerPlayer player = player(server);
             RecipeHolder<?> stick = server.getRecipeManager()
-                    .byKey(ResourceKey.create(Registries.RECIPE, Identifier.withDefaultNamespace("stick")))
+                    .byKey(ResourceKey.create(Registries.RECIPE, ResourceLocation.withDefaultNamespace("stick")))
                     .orElseThrow();
             AbstractCraftingMenu menu = (AbstractCraftingMenu) player.containerMenu;
             menu.handlePlacement(false, false, stick, player.level(), player.getInventory());
@@ -444,7 +444,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         world.getServer().runOnServer(server -> {
             ServerPlayer player = player(server);
             RecipeHolder<?> stick = server.getRecipeManager()
-                    .byKey(ResourceKey.create(Registries.RECIPE, Identifier.withDefaultNamespace("stick")))
+                    .byKey(ResourceKey.create(Registries.RECIPE, ResourceLocation.withDefaultNamespace("stick")))
                     .orElseThrow();
             AbstractCraftingMenu menu = (AbstractCraftingMenu) player.containerMenu;
             menu.handlePlacement(true, false, stick, player.level(), player.getInventory());
@@ -670,7 +670,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
     // ---- helpers ----
 
     /**
-     * Lets packets sent so far reach the other side and the answers come back. Fabric API for 1.21.11 has no
+     * Lets packets sent so far reach the other side and the answers come back. Fabric API for 1.21.10 has no
      * TestServerConnection.waitFor*Packets; its network synchronizer handles every packet within the server and client
      * task phases of the next tick, so one tick covers a client -> server -> client round trip.
      */
@@ -678,7 +678,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         context.waitTick();
     }
 
-    /** Turns the player's view; Fabric API for 1.21.11 has no TestInput.lookAt (same as its later implementation). */
+    /** Turns the player's view; Fabric API for 1.21.10 has no TestInput.lookAt (same as its later implementation). */
     private static void lookAt(ClientGameTestContext context, float yaw, float pitch) {
         context.runOnClient(mc -> {
             mc.player.setYRot(yaw);
@@ -727,7 +727,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         clickAt(context, guiX, guiY, InputConstants.MOUSE_BUTTON_LEFT);
     }
 
-    /** Mouse buttons are GLFW numbers in 1.21.11: left = 0, right = 1, middle = 2 (InputConstants.MOUSE_BUTTON_*). */
+    /** Mouse buttons are GLFW numbers in 1.21.10: left = 0, right = 1, middle = 2 (InputConstants.MOUSE_BUTTON_*). */
     private static void clickAt(ClientGameTestContext context, double guiX, double guiY, int button) {
         double scale = context.computeOnClient(mc -> (double) mc.getWindow().getScreenWidth() / mc.getWindow().getGuiScaledWidth());
         context.getInput().setCursorPos(guiX * scale, guiY * scale);

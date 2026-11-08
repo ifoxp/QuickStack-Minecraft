@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
@@ -19,7 +20,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -83,7 +83,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
     }
 
     @Inject(method = "renderSlot", at = @At("RETURN"))
-    private void quickstack$drawLock(GuiGraphics graphics, Slot slot, int mouseX, int mouseY, CallbackInfo ci) {
+    private void quickstack$drawLock(GuiGraphics graphics, Slot slot, CallbackInfo ci) {
         ScreenButtons.drawSlotOverlay(graphics, slot);
     }
 
@@ -192,7 +192,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
         if (slot == null || minecraft.player == null || !menu.getCarried().isEmpty() || !QuickStackClient.serverHasMod()) {
             return;
         }
-        // Mouse buttons are GLFW numbers in 1.21.11 (left = 0). The event's modifiers can miss a held Alt, so ask the keyboard too.
+        // Mouse buttons are GLFW numbers in 1.21.10 (left = 0). The event's modifiers can miss a held Alt, so ask the keyboard too.
         boolean alt = event.hasAltDown() || minecraft.hasAltDown();
         if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && alt && ScreenButtons.isLockableSlot(slot)) {
             QuickStackClient.toggleLock(slot.getContainerSlot());
