@@ -1,9 +1,10 @@
 package top.ifoxp.quickstack.client.ui;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -21,8 +22,8 @@ import top.ifoxp.quickstack.network.Payloads;
 import top.ifoxp.quickstack.sort.SortMode;
 
 /**
- * QuickStack settings, built from vanilla widgets (no config library). The left column holds the player's own
- * preferences; the right column holds the server limits and is only shown when this client runs the server
+ * QuickStack settings, built from vanilla widgets (no config library). One page holds the player's own
+ * preferences; a second tab holds the world (server) limits and only appears when this client runs the server
  * (singleplayer), because a remote server reads its own file.
  */
 public class ConfigScreen extends Screen {
@@ -32,6 +33,8 @@ public class ConfigScreen extends Screen {
     private static final int ROW = 22;
 
     private final @Nullable Screen parent;
+    /** Showing the world (server) settings instead of the player's own. */
+    private boolean serverPage;
 
     public ConfigScreen(@Nullable Screen parent) {
         super(Component.translatable("quickstack.config.title"));
@@ -40,84 +43,118 @@ public class ConfigScreen extends Screen {
 
     @Override
     protected void init() {
-        ClientConfig client = ClientConfig.get();
-        boolean editServer = minecraft.hasSingleplayerServer() || minecraft.level == null;
-        int left = editServer ? width / 2 - WIDTH - 5 : width / 2 - WIDTH / 2;
-        int right = width / 2 + 5;
-        int top = 40;
+        boolean editServer = editsServer();
+        if (!editServer) {
+            serverPage = false;
+        }
+        int top = 34;
+        if (editServer) {
+            // Two tabs: the player's preferences and the world (server) limits.
+            int tabWidth = 120;
+            Button clientTab = Button.builder(Component.translatable("quickstack.config.client_column"), button -> showPage(false))
+                    .bounds(width / 2 - tabWidth - 2, top - 4, tabWidth, HEIGHT).build();
+            Button serverTab = Button.builder(Component.translatable("quickstack.config.server_column"), button -> showPage(true))
+                    .bounds(width / 2 + 2, top - 4, tabWidth, HEIGHT).build();
+            clientTab.active = serverPage;
+            serverTab.active = !serverPage;
+            addRenderableWidget(clientTab);
+            addRenderableWidget(serverTab);
+            top += ROW + 2;
+        }
 
-        int row = 0;
-        add(left, top, row++, new IntSlider(Component.translatable("quickstack.config.keep_in_chest"), 0, 64,
+        List<AbstractWidget> widgets = serverPage ? serverWidgets() : clientWidgets();
+        // As many columns as the screen height needs, so no widget ends up off screen (a widget below the edge
+        // gets a zero-height scissor, which crashes the 26.3 GUI renderer).
+        int bottom = height - 30;
+        int rows = Math.max(1, (bottom - top) / ROW);
+        int columns = (widgets.size() + rows - 1) / rows;
+        rows = (widgets.size() + columns - 1) / columns;
+        int totalWidth = columns * WIDTH + (columns - 1) * 10;
+        int left = width / 2 - totalWidth / 2;
+        for (int i = 0; i < widgets.size(); i++) {
+            AbstractWidget widget = widgets.get(i);
+            widget.setX(left + (i / rows) * (WIDTH + 10));
+            widget.setY(top + (i % rows) * ROW);
+            widget.setWidth(WIDTH);
+            addRenderableWidget(widget);
+        }
+
+        addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> onClose())
+                .bounds(width / 2 - 100, Math.min(height - 26, top + rows * ROW + 6), 200, HEIGHT)
+                .build());
+    }
+
+    private boolean editsServer() {
+        return minecraft.hasSingleplayerServer() || minecraft.level == null;
+    }
+
+    private void showPage(boolean server) {
+        serverPage = server;
+        rebuildWidgets();
+    }
+
+    private List<AbstractWidget> clientWidgets() {
+        ClientConfig client = ClientConfig.get();
+        List<AbstractWidget> list = new ArrayList<>();
+        list.add(new IntSlider(Component.translatable("quickstack.config.keep_in_chest"), 0, 64,
                 client.keepInChest, value -> client.keepInChest = value));
-        add(left, top, row++, toggle("quickstack.config.animation", client.animation, value -> client.animation = value));
-        add(left, top, row++, toggle("quickstack.config.highlight", client.highlightTargets, value -> client.highlightTargets = value));
-        add(left, top, row++, toggle("quickstack.config.inventory_buttons", client.showInventoryButtons,
+        list.add(toggle("quickstack.config.animation", client.animation, value -> client.animation = value));
+        list.add(toggle("quickstack.config.highlight", client.highlightTargets, value -> client.highlightTargets = value));
+        list.add(toggle("quickstack.config.inventory_buttons", client.showInventoryButtons,
                 value -> client.showInventoryButtons = value));
-        add(left, top, row++, CycleButton.<ClientConfig.ButtonPlacement>builder(
+        list.add(CycleButton.<ClientConfig.ButtonPlacement>builder(
                         placement -> Component.translatable(placement.translationKey()), client.buttonPlacement)
                 .withValues(ClientConfig.ButtonPlacement.values())
                 .create(0, 0, WIDTH, HEIGHT, Component.translatable("quickstack.config.button_placement"),
                         (button, value) -> client.buttonPlacement = value));
-        add(left, top, row++, toggle("quickstack.config.container_buttons", client.showContainerButtons,
+        list.add(toggle("quickstack.config.container_buttons", client.showContainerButtons,
                 value -> client.showContainerButtons = value));
-        add(left, top, row++, toggle("quickstack.config.middle_click_sort", client.middleClickSort,
+        list.add(toggle("quickstack.config.middle_click_sort", client.middleClickSort,
                 value -> client.middleClickSort = value));
-        add(left, top, row++, CycleButton.<SortMode>builder(mode -> Component.translatable(mode.translationKey()), client.sortMode)
+        list.add(CycleButton.<SortMode>builder(mode -> Component.translatable(mode.translationKey()), client.sortMode)
                 .withValues(SortMode.values())
                 .create(0, 0, WIDTH, HEIGHT, Component.translatable("quickstack.config.sort_mode"),
                         (button, value) -> client.sortMode = value));
-        add(left, top, row++, toggle("quickstack.config.craft_nearby_client", client.craftFromNearby,
+        list.add(toggle("quickstack.config.craft_nearby_client", client.craftFromNearby,
                 value -> client.craftFromNearby = value));
-        add(left, top, row++, CycleButton.<ClientConfig.ShiftDrag>builder(
+        list.add(CycleButton.<ClientConfig.ShiftDrag>builder(
                         mode -> Component.translatable(mode.translationKey()), client.shiftDrag)
                 .withValues(ClientConfig.ShiftDrag.values())
                 .create(0, 0, WIDTH, HEIGHT, Component.translatable("quickstack.config.shift_drag"),
                         (button, value) -> client.shiftDrag = value));
-        add(left, top, row++, toggle("quickstack.config.scroll_pick", client.scrollPickAmount,
+        list.add(toggle("quickstack.config.scroll_pick", client.scrollPickAmount,
                 value -> client.scrollPickAmount = value));
         if (minecraft.player != null) {
-            int half = (WIDTH - 4) / 2;
-            int y = top + row++ * ROW;
-            addRenderableWidget(Button.builder(Component.translatable("quickstack.config.reset_locks"),
-                    button -> QuickStackClient.toggleLock(Payloads.ToggleLock.RESET_DEFAULT)).bounds(left, y, half, HEIGHT).build());
-            addRenderableWidget(Button.builder(Component.translatable("quickstack.config.unlock_all"),
-                    button -> QuickStackClient.toggleLock(Payloads.ToggleLock.UNLOCK_ALL)).bounds(left + WIDTH - half, y, half, HEIGHT).build());
+            list.add(Button.builder(Component.translatable("quickstack.config.reset_locks"),
+                    button -> QuickStackClient.toggleLock(Payloads.ToggleLock.RESET_DEFAULT)).size(WIDTH, HEIGHT).build());
+            list.add(Button.builder(Component.translatable("quickstack.config.unlock_all"),
+                    button -> QuickStackClient.toggleLock(Payloads.ToggleLock.UNLOCK_ALL)).size(WIDTH, HEIGHT).build());
         }
-
-        if (editServer) {
-            ServerConfig server = ServerConfig.get();
-            int srow = 0;
-            add(right, top, srow++, new IntSlider(Component.translatable("quickstack.config.radius"), 1, 32,
-                    server.quickStackRadius, value -> server.quickStackRadius = value));
-            add(right, top, srow++, new IntSlider(Component.translatable("quickstack.config.craft_radius"), 1, 32,
-                    server.craftRadius, value -> server.craftRadius = value));
-            add(right, top, srow++, new IntSlider(Component.translatable("quickstack.config.search_radius"), 1, 48,
-                    server.searchRadius, value -> server.searchRadius = value));
-            add(right, top, srow++, new IntSlider(Component.translatable("quickstack.config.max_inserts"), 1, 128,
-                    server.maxInsertsPerTick, value -> server.maxInsertsPerTick = value));
-            add(right, top, srow++, new DoubleSlider(Component.translatable("quickstack.config.flight_speed"), 0.2, 3.0,
-                    server.flightSpeed, value -> server.flightSpeed = value));
-            add(right, top, srow++, new IntSlider(Component.translatable("quickstack.config.cooldown"), 0, 100,
-                    server.cooldownTicks, value -> server.cooldownTicks = value));
-            add(right, top, srow++, new IntSlider(Component.translatable("quickstack.config.undo_seconds"), 0, 60,
-                    server.undoSeconds, value -> server.undoSeconds = value));
-            add(right, top, srow++, toggle("quickstack.config.craft_nearby_server", server.craftFromNearby,
-                    value -> server.craftFromNearby = value));
-            add(right, top, srow++, toggle("quickstack.config.modded_containers", server.allowModdedContainers,
-                    value -> server.allowModdedContainers = value));
-            row = Math.max(row, srow);
-        }
-
-        addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> onClose())
-                .bounds(width / 2 - 100, Math.min(height - 28, top + row * ROW + 10), 200, HEIGHT)
-                .build());
+        return list;
     }
 
-    private void add(int x, int top, int row, AbstractWidget widget) {
-        widget.setX(x);
-        widget.setY(top + row * ROW);
-        widget.setWidth(WIDTH);
-        addRenderableWidget(widget);
+    private List<AbstractWidget> serverWidgets() {
+        ServerConfig server = ServerConfig.get();
+        List<AbstractWidget> list = new ArrayList<>();
+        list.add(new IntSlider(Component.translatable("quickstack.config.radius"), 1, 32,
+                server.quickStackRadius, value -> server.quickStackRadius = value));
+        list.add(new IntSlider(Component.translatable("quickstack.config.craft_radius"), 1, 32,
+                server.craftRadius, value -> server.craftRadius = value));
+        list.add(new IntSlider(Component.translatable("quickstack.config.search_radius"), 1, 48,
+                server.searchRadius, value -> server.searchRadius = value));
+        list.add(new IntSlider(Component.translatable("quickstack.config.max_inserts"), 1, 128,
+                server.maxInsertsPerTick, value -> server.maxInsertsPerTick = value));
+        list.add(new DoubleSlider(Component.translatable("quickstack.config.flight_speed"), 0.2, 3.0,
+                server.flightSpeed, value -> server.flightSpeed = value));
+        list.add(new IntSlider(Component.translatable("quickstack.config.cooldown"), 0, 100,
+                server.cooldownTicks, value -> server.cooldownTicks = value));
+        list.add(new IntSlider(Component.translatable("quickstack.config.undo_seconds"), 0, 60,
+                server.undoSeconds, value -> server.undoSeconds = value));
+        list.add(toggle("quickstack.config.craft_nearby_server", server.craftFromNearby,
+                value -> server.craftFromNearby = value));
+        list.add(toggle("quickstack.config.modded_containers", server.allowModdedContainers,
+                value -> server.allowModdedContainers = value));
+        return list;
     }
 
     private static CycleButton<Boolean> toggle(String key, boolean value, Consumer<Boolean> setter) {
@@ -128,17 +165,13 @@ public class ConfigScreen extends Screen {
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         super.extractRenderState(graphics, mouseX, mouseY, a);
-        graphics.centeredText(font, title, width / 2, 15, 0xFFFFFFFF);
-        if (minecraft.hasSingleplayerServer() || minecraft.level == null) {
-            graphics.centeredText(font, Component.translatable("quickstack.config.client_column"), width / 2 - WIDTH / 2 - 5, 28, 0xFFA0A0A0);
-            graphics.centeredText(font, Component.translatable("quickstack.config.server_column"), width / 2 + WIDTH / 2 + 5, 28, 0xFFA0A0A0);
-        }
+        graphics.centeredText(font, title, width / 2, 12, 0xFFFFFFFF);
     }
 
     @Override
     public void onClose() {
         ClientConfig.save();
-        if (minecraft.hasSingleplayerServer() || minecraft.level == null) {
+        if (editsServer()) {
             ServerConfig.save();
         }
         minecraft.gui.setScreen(parent);

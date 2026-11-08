@@ -60,3 +60,7 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
   mod. Mouse wheel: up = TakeFromSlot payload (one item onto the cursor, predicted on the client), down = vanilla
   right click (PICKUP button 1). Container click buttons stay 0/1 in the protocol even though SDL mouse buttons are 1/3.
   Gametest 43/43.
+- 2026-11-08: crash fix. At 1920x1080 with GUI scale 4 (270 units high) the settings column ran off screen; a widget
+  below the edge gets a zero-height scissor and 26.3's GuiRenderer throws "Scissor size must be >0". ConfigScreen now
+  has two tabs (preferences / world) and lays widgets out in as many columns as the height needs. Highlighter lights
+  both halves of a double chest (client looks up the partner from the block state). Gametest 45/45, incl. GUI scale 4.

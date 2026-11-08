@@ -41,7 +41,9 @@ import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.ifoxp.quickstack.client.ClientState;
+import top.ifoxp.quickstack.client.Highlighter;
 import top.ifoxp.quickstack.client.QuickStackClient;
+import top.ifoxp.quickstack.client.ui.ConfigScreen;
 import top.ifoxp.quickstack.client.ui.ContainerScreenAccess;
 import top.ifoxp.quickstack.client.ui.FindItemScreen;
 import top.ifoxp.quickstack.client.ui.IconButton;
@@ -143,6 +145,42 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
             check("sword without a matching chest stayed", count(inventory, Items.DIAMOND_SWORD) == 1, "");
             check("no cobblestone left in the inventory", count(inventory, Items.COBBLESTONE) == 0, "");
         });
+
+        // Searching for dirt lights up both halves of the double chest.
+        context.runOnClient(mc -> {
+            Highlighter.clear();
+            QuickStackClient.find(List.of(new ItemStack(Items.DIRT)));
+        });
+        world.getConnection().waitForServerboundPackets();
+        world.getConnection().waitForClientboundPackets();
+        context.waitTicks(2);
+        boolean bothHalves = context.computeOnClient(mc -> Highlighter.isHighlighted(doubleLeft) && Highlighter.isHighlighted(doubleRight));
+        check("search highlights both halves of a double chest", bothHalves, "");
+
+        // The settings screen fits a small GUI (1920x1080 at GUI scale 4 is only 270 units high) on both pages.
+        context.getInput().resizeWindow(1920, 1080);
+        context.runOnClient(mc -> {
+            mc.options.guiScale().set(4);
+            mc.resizeGui();
+        });
+        context.setScreen(() -> new ConfigScreen(null));
+        context.waitTicks(3);
+        context.takeScreenshot("qs_03b_config_small_gui");
+        context.clickScreenButton("quickstack.config.server_column");
+        context.waitTicks(3);
+        context.takeScreenshot("qs_03c_config_world_page");
+        boolean allOnScreen = context.computeOnClient(mc -> mc.gui.screen().children().stream()
+                .filter(child -> child instanceof net.minecraft.client.gui.components.AbstractWidget)
+                .map(child -> (net.minecraft.client.gui.components.AbstractWidget) child)
+                .allMatch(widget -> widget.getBottom() <= mc.gui.screen().height));
+        check("config screen keeps every widget on screen at GUI scale 4", allOnScreen, "");
+        context.setScreen(() -> null);
+        context.runOnClient(mc -> {
+            mc.options.guiScale().set(0);
+            mc.resizeGui();
+        });
+        context.getInput().resizeWindow(854, 480);
+        context.waitTicks(3);
     }
 
     /** Alt+click locks a slot, the sort button sorts around it. Real mouse input on the inventory screen. */

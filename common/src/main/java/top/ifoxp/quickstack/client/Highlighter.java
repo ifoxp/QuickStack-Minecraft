@@ -9,6 +9,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.ChestType;
 
 /**
  * Makes containers sparkle: green for containers that received quick-stacked items, white rods for search
@@ -26,10 +29,23 @@ public final class Highlighter {
     }
 
     public static void add(List<BlockPos> positions, int ticks, boolean search) {
+        ClientLevel level = Minecraft.getInstance().level;
         for (BlockPos pos : positions) {
-            ACTIVE.merge(pos.immutable(), new Entry(ticks, search),
-                    (old, fresh) -> new Entry(Math.max(old.ticksLeft, fresh.ticksLeft), old.search || fresh.search));
+            put(pos.immutable(), ticks, search);
+            // A double chest arrives as one position; light up its other half too.
+            if (level != null) {
+                BlockState state = level.getBlockState(pos);
+                if (state.getBlock() instanceof ChestBlock && state.hasProperty(ChestBlock.TYPE)
+                        && state.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
+                    put(pos.relative(ChestBlock.getConnectedDirection(state)), ticks, search);
+                }
+            }
         }
+    }
+
+    private static void put(BlockPos pos, int ticks, boolean search) {
+        ACTIVE.merge(pos, new Entry(ticks, search),
+                (old, fresh) -> new Entry(Math.max(old.ticksLeft, fresh.ticksLeft), old.search || fresh.search));
     }
 
     public static void tick(Minecraft minecraft) {
@@ -64,6 +80,10 @@ public final class Highlighter {
                 level.addParticle(particle, pos.getX() + x, pos.getY() + y, pos.getZ() + z, 0, entry.search ? 0.01 : 0, 0);
             }
         });
+    }
+
+    public static boolean isHighlighted(BlockPos pos) {
+        return ACTIVE.containsKey(pos);
     }
 
     public static void clear() {
