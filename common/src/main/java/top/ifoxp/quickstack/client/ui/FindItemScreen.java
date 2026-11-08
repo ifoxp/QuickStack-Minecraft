@@ -255,7 +255,7 @@ public class FindItemScreen extends Screen {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         Entry entry = entryAt(event.x(), event.y());
         if (entry != null && entry.stored) {
-            minecraft.gui.setScreen(null);
+            minecraft.setScreen(null);
             QuickStackClient.find(List.of(entry.stack));
             return true;
         }
@@ -275,7 +275,7 @@ public class FindItemScreen extends Screen {
     public boolean keyPressed(KeyEvent event) {
         if (event.isConfirmation()) {
             List<ItemStack> found = entries.stream().filter(Entry::stored).map(Entry::stack).toList();
-            minecraft.gui.setScreen(null);
+            minecraft.setScreen(null);
             QuickStackClient.find(found);
             return true;
         }
@@ -289,6 +289,6 @@ public class FindItemScreen extends Screen {
 
     @Override
     public void onClose() {
-        minecraft.gui.setScreen(parent);
+        minecraft.setScreen(parent);
     }
 }

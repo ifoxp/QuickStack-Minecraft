@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img alt="Minecraft 26.2" src="https://img.shields.io/badge/Minecraft-26.2-62B47A?style=flat-square">
+  <img alt="Minecraft 26.1 – 26.1.2" src="https://img.shields.io/badge/Minecraft-26.1_%E2%80%93_26.1.2-62B47A?style=flat-square">
   <img alt="Fabric" src="https://img.shields.io/badge/Fabric-підтримується-DBD0B4?style=flat-square">
   <img alt="NeoForge" src="https://img.shields.io/badge/NeoForge-підтримується-E36D29?style=flat-square">
   <img alt="26 мов" src="https://img.shields.io/badge/мов-26-4C8BF5?style=flat-square">
@@ -105,7 +105,7 @@
 
 | | |
 |---|---|
-| Minecraft | **26.2** |
+| Minecraft | **26.1 – 26.1.2** |
 | Завантажувач | **Fabric** (з [Fabric API](https://modrinth.com/mod/fabric-api)) або **NeoForge** |
 | Де ставити | **і клієнт, і сервер** — в одиночній грі працює одразу |
 | Необов'язково | [Mod Menu](https://modrinth.com/mod/modmenu) (Fabric) — кнопка налаштувань у списку модів |
@@ -157,7 +157,7 @@ Latviešu, Eesti, Română, Монгол.
 
 ## Збирання з коду
 
-Minecraft 26.2 потребує **Java 25**.
+Minecraft 26.1 – 26.1.2 потребує **Java 25**.
 
 ```sh
 ./gradlew build -x javadoc                 # jar-файли в fabric/build/libs і neoforge/build/libs

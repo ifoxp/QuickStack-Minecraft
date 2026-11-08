@@ -59,7 +59,7 @@ public final class QuickStackClient {
             return;
         }
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.gui.screen() != null) {
+        if (minecraft.screen != null) {
             minecraft.player.closeContainer();
         }
         Services.client().sendToServer(new Payloads.QuickStackNearby(ClientConfig.get().animation));
@@ -118,10 +118,10 @@ public final class QuickStackClient {
             undo();
         }
         while (FIND.consumeClick()) {
-            minecraft.gui.setScreen(new top.ifoxp.quickstack.client.ui.FindItemScreen(null));
+            minecraft.setScreen(new top.ifoxp.quickstack.client.ui.FindItemScreen(null));
         }
         while (CONFIG.consumeClick()) {
-            minecraft.gui.setScreen(new ConfigScreen(null));
+            minecraft.setScreen(new ConfigScreen(null));
         }
         FlightAnimator.tick(minecraft);
         Highlighter.tick(minecraft);
@@ -130,7 +130,7 @@ public final class QuickStackClient {
 
     /** Keeps the recipe book's view of nearby containers fresh while a crafting grid is open. */
     private static void tickNearbyItems(Minecraft minecraft) {
-        boolean crafting = minecraft.gui.screen() instanceof AbstractContainerScreen<?> screen
+        boolean crafting = minecraft.screen instanceof AbstractContainerScreen<?> screen
                 && screen.getMenu() instanceof AbstractCraftingMenu;
         if (!crafting) {
             nearbyRefresh = 0;

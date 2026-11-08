@@ -11,7 +11,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.Vec3;
 import top.ifoxp.quickstack.config.ClientConfig;
@@ -104,7 +104,7 @@ public final class FlightAnimator {
     }
 
     private static ItemEntity createEntity(ClientLevel level, Payloads.Flight flight, Vec3 start) {
-        ItemEntity entity = new ItemEntity(EntityTypes.ITEM, level) {
+        ItemEntity entity = new ItemEntity(EntityType.ITEM, level) {
             @Override
             public void tick() {
                 // Positions come from FlightAnimator; ClientLevel.tickNonPassenger already keeps the previous position for interpolation.

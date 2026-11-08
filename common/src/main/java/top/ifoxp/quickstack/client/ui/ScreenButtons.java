@@ -103,9 +103,9 @@ public final class ScreenButtons {
         if (full) {
             specs.add(new Spec(IconButton.Icon.FIND,
                     withKey(Component.translatable("quickstack.button.find"), QuickStackClient.FIND),
-                    () -> Minecraft.getInstance().gui.setScreen(new FindItemScreen(null))));
+                    () -> Minecraft.getInstance().setScreen(new FindItemScreen(null))));
             specs.add(new Spec(IconButton.Icon.CONFIG, Component.translatable("quickstack.button.config"),
-                    () -> Minecraft.getInstance().gui.setScreen(new ConfigScreen(Minecraft.getInstance().gui.screen()))));
+                    () -> Minecraft.getInstance().setScreen(new ConfigScreen(Minecraft.getInstance().screen))));
         }
         return specs;
     }

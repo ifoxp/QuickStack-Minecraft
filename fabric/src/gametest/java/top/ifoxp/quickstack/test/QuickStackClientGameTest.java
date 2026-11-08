@@ -69,7 +69,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
     @Override
     public void runTest(ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
-            world.getConnection().waitForChunksRender();
+            world.getClientLevel().waitForChunksRender();
             TestServerContext server = world.getServer();
             server.runCommand("gamemode survival @a");
             context.waitTicks(20);
@@ -120,7 +120,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
             inventory.setItem(13, new ItemStack(Items.DIAMOND_SWORD));
         });
         context.getInput().lookAt(180, 20);
-        world.getConnection().waitForChunksRender();
+        world.getClientLevel().waitForChunksRender();
         context.waitTicks(10);
 
         context.getInput().pressKey(QuickStackClient.QUICK_STACK);
@@ -151,8 +151,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
             Highlighter.clear();
             QuickStackClient.find(List.of(new ItemStack(Items.DIRT)));
         });
-        world.getConnection().waitForServerboundPackets();
-        world.getConnection().waitForClientboundPackets();
+        waitForPackets(context);
         context.waitTicks(2);
         boolean bothHalves = context.computeOnClient(mc -> Highlighter.isHighlighted(doubleLeft) && Highlighter.isHighlighted(doubleRight));
         check("search highlights both halves of a double chest", bothHalves, "");
@@ -169,10 +168,10 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         context.clickScreenButton("quickstack.config.server_column");
         context.waitTicks(3);
         context.takeScreenshot("qs_03c_config_world_page");
-        boolean allOnScreen = context.computeOnClient(mc -> mc.gui.screen().children().stream()
+        boolean allOnScreen = context.computeOnClient(mc -> mc.screen.children().stream()
                 .filter(child -> child instanceof net.minecraft.client.gui.components.AbstractWidget)
                 .map(child -> (net.minecraft.client.gui.components.AbstractWidget) child)
-                .allMatch(widget -> widget.getBottom() <= mc.gui.screen().height));
+                .allMatch(widget -> widget.getBottom() <= mc.screen.height));
         check("config screen keeps every widget on screen at GUI scale 4", allOnScreen, "");
         context.setScreen(() -> null);
         context.runOnClient(mc -> {
@@ -204,8 +203,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         context.getInput().holdAlt();
         clickAt(context, slot30[0], slot30[1]);
         context.getInput().releaseAlt();
-        world.getConnection().waitForServerboundPackets();
-        world.getConnection().waitForClientboundPackets();
+        waitForPackets(context);
         context.waitTicks(2);
         boolean lockedOnServer = world.getServer().computeOnServer(s -> LockManager.isLocked(LockManager.mask(player(s)), 30));
         check("alt+click locked slot 30 on the server", lockedOnServer, "");
@@ -213,7 +211,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         context.takeScreenshot("qs_04_locked_slot");
 
         clickButton(context, IconButton.Icon.SORT);
-        world.getConnection().waitForServerboundPackets();
+        waitForPackets(context);
         context.waitTicks(3);
         context.takeScreenshot("qs_05_sorted");
         world.getServer().runOnServer(server -> {
@@ -247,7 +245,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         context.takeScreenshot("qs_06_chest_buttons");
 
         clickButton(context, IconButton.Icon.RESTOCK);
-        world.getConnection().waitForServerboundPackets();
+        waitForPackets(context);
         context.waitTicks(3);
         world.getServer().runOnServer(server -> {
             ServerLevel level = player(server).level();
@@ -258,10 +256,10 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         });
 
         clickButton(context, IconButton.Icon.DEPOSIT_MATCHING);
-        world.getConnection().waitForServerboundPackets();
+        waitForPackets(context);
         context.waitTicks(3);
         clickButton(context, IconButton.Icon.SORT, "quickstack.button.sort_container");
-        world.getConnection().waitForServerboundPackets();
+        waitForPackets(context);
         context.waitTicks(3);
         context.takeScreenshot("qs_07_chest_sorted");
         world.getServer().runOnServer(server -> {
@@ -279,13 +277,13 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
 
         // Middle click on a chest slot sorts the chest.
         double[] chestSlot = context.computeOnClient(mc -> {
-            AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) mc.gui.screen();
+            AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) mc.screen;
             ContainerScreenAccess layout = (ContainerScreenAccess) screen;
             Slot slot = screen.getMenu().slots.get(5);
             return new double[] {layout.quickstack$leftPos() + slot.x + 8, layout.quickstack$topPos() + slot.y + 8};
         });
         clickAt(context, chestSlot[0], chestSlot[1], InputConstants.MOUSE_BUTTON_MIDDLE);
-        world.getConnection().waitForServerboundPackets();
+        waitForPackets(context);
         context.waitTicks(3);
         world.getServer().runOnServer(server -> {
             Container container = container(player(server).level(), chest);
@@ -296,12 +294,12 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         });
 
         clickButton(context, IconButton.Icon.EXCLUDE);
-        world.getConnection().waitForServerboundPackets();
+        waitForPackets(context);
         context.waitTicks(2);
         boolean excluded = world.getServer().computeOnServer(s -> Services.PLATFORM.isExcluded(player(s).level().getBlockEntity(chest)));
         check("exclude button marks the chest", excluded, "");
         clickButton(context, IconButton.Icon.EXCLUDE);
-        world.getConnection().waitForServerboundPackets();
+        waitForPackets(context);
         context.waitTicks(2);
         boolean included = !world.getServer().computeOnServer(s -> Services.PLATFORM.isExcluded(player(s).level().getBlockEntity(chest)));
         check("second click includes it again", included, "");
@@ -329,7 +327,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         context.waitTick();
         context.getInput().releaseMouse(InputConstants.MOUSE_BUTTON_LEFT);
         context.getInput().releaseShift();
-        world.getConnection().waitForServerboundPackets();
+        waitForPackets(context);
         context.waitTicks(3);
         world.getServer().runOnServer(server -> {
             Container container = container(player(server).level(), chest);
@@ -357,7 +355,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
             return -1;
         });
         double[] cobble = context.computeOnClient(mc -> {
-            AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) mc.gui.screen();
+            AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) mc.screen;
             ContainerScreenAccess layout = (ContainerScreenAccess) screen;
             Slot slot = screen.getMenu().slots.get(cobbleSlot);
             return new double[] {layout.quickstack$leftPos() + slot.x + 8, layout.quickstack$topPos() + slot.y + 8};
@@ -368,7 +366,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
             context.getInput().scroll(1);
             context.waitTick();
         }
-        world.getConnection().waitForServerboundPackets();
+        waitForPackets(context);
         context.waitTicks(2);
         int carriedUp = world.getServer().computeOnServer(s -> player(s).containerMenu.getCarried().getCount());
         check("three wheel notches up put 3 items on the cursor", carriedUp == 3, "cursor has " + carriedUp);
@@ -376,7 +374,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
             context.getInput().scroll(-1);
             context.waitTick();
         }
-        world.getConnection().waitForServerboundPackets();
+        waitForPackets(context);
         context.waitTicks(2);
         world.getServer().runOnServer(server -> {
             ServerPlayer player = player(server);
@@ -495,7 +493,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         int afterStack = world.getServer().computeOnServer(s -> count(container(player(s).level(), chest), Items.COBBLESTONE));
         check("second quick stack landed", afterStack == 140, "chest has " + afterStack);
         context.runOnClient(mc -> QuickStackClient.undo());
-        world.getConnection().waitForServerboundPackets();
+        waitForPackets(context);
         context.waitTicks(3);
         world.getServer().runOnServer(server -> {
             check("undo returned the cobblestone", count(player(server).getInventory(), Items.COBBLESTONE) == 10,
@@ -536,7 +534,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
                 inventory.setItem(i, new ItemStack(kinds[i % kinds.length], 64));
             }
         });
-        world.getConnection().waitForChunksRender();
+        world.getClientLevel().waitForChunksRender();
         context.getInput().lookAt(0, 10);
         context.waitTicks(110);
         long baseline = world.getServer().computeOnServer(s -> max(s.getTickTimesNanos()));
@@ -614,7 +612,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
             }
         });
         LOG.info("[qs-test] massive: {} chests, {} full stacks stored", chests.size(), chests.size() * 26);
-        world.getConnection().waitForChunksRender();
+        world.getClientLevel().waitForChunksRender();
         context.getInput().lookAt(0, 10);
         context.waitTicks(110);
         long baseline = world.getServer().computeOnServer(s -> max(s.getTickTimesNanos()));
@@ -670,6 +668,15 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
     }
 
     // ---- helpers ----
+
+    /**
+     * Lets packets sent so far reach the other side and the answers come back. Fabric API for 26.1 has no
+     * TestServerConnection.waitFor*Packets; its network synchronizer handles every packet within the server and client
+     * task phases of the next tick, so one tick covers a client -> server -> client round trip.
+     */
+    private static void waitForPackets(ClientGameTestContext context) {
+        context.waitTick();
+    }
 
     private void check(String name, boolean ok, String detail) {
         if (ok) {
@@ -728,7 +735,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
     /** {@code tooltipKey} picks one button when several share an icon. */
     private static void clickButton(ClientGameTestContext context, IconButton.Icon icon, String tooltipKey) {
         double[] center = context.computeOnClient(mc -> {
-            for (GuiEventListener child : mc.gui.screen().children()) {
+            for (GuiEventListener child : mc.screen.children()) {
                 if (child instanceof IconButton button && button.icon() == icon && (tooltipKey == null
                         || (button.getMessage().getContents() instanceof TranslatableContents contents && contents.getKey().equals(tooltipKey)))) {
                     return new double[] {button.getX() + IconButton.SIZE / 2.0, button.getY() + IconButton.SIZE / 2.0};
@@ -737,14 +744,14 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
             return null;
         });
         if (center == null) {
-            throw new AssertionError("No " + icon + " button on " + context.computeOnClient(mc -> String.valueOf(mc.gui.screen())));
+            throw new AssertionError("No " + icon + " button on " + context.computeOnClient(mc -> String.valueOf(mc.screen)));
         }
         clickAt(context, center[0], center[1]);
     }
 
     private static double[] slotCenter(ClientGameTestContext context, int inventorySlot) {
         return context.computeOnClient(mc -> {
-            AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) mc.gui.screen();
+            AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) mc.screen;
             ContainerScreenAccess layout = (ContainerScreenAccess) screen;
             for (Slot slot : screen.getMenu().slots) {
                 if (slot.container == mc.player.getInventory() && slot.getContainerSlot() == inventorySlot) {

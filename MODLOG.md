@@ -54,6 +54,24 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
 - Showcase recorder (QuickStackShowcase, ShowcaseOverlay, `-Pshowcase`, tools/make_media.py) removed on this branch.
 - Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8 mixin targets), client gametest 45/45.
 
+## 26.1 – 26.1.2 (branch `mc/26.1`, ported from `mc/26.2` 2026-11-08)
+- One jar per loader for 26.1, 26.1.1 and 26.1.2, built against 26.1.2. Java 25. Fabric Loader 0.20.1,
+  Fabric API 0.155.3+26.1.2, Mod Menu 18.0.2, NeoForge 26.1.2.126, NeoForm 26.1.2-1. Tooling as on `mc/26.2`
+  (template branch `26.1.2` differs only in older plugin versions). Sources: `E:\Programing\GamesProjects\Minecraft\mc-src-26.1.2\`.
+- Metadata: Fabric `"minecraft": ">=26.1 <26.2"`; NeoForge `minecraft [26.1, 26.2)`, `neoforge [26.1,)`
+  (new property `neoforge_version_range`, so 26.1.0.x / 26.1.1.x builds are accepted).
+- API differences from 26.2:
+  - `EntityTypes` does not exist: `EntityType.ITEM` (`FlightAnimator`);
+  - no `Gui.screen()` / `Gui.setScreen(...)`: `Minecraft.screen` field and `Minecraft.setScreen(...)`
+    (`QuickStackClient`, `ConfigScreen`, `FindItemScreen`, `ScreenButtons`, `AbstractContainerScreenMixin`, gametest);
+  - Fabric client gametest API: `TestSingleplayerContext.getClientLevel().waitForChunksRender()` instead of
+    `getConnection()`, and no `waitForServerbound/ClientboundPackets`. The test waits one tick instead
+    (`waitForPackets`): this API's network synchronizer handles all packets in the next tick's task phases. Checks unchanged;
+  - `AbstractContainerScreen` still has the touchscreen drag code (inactive unless the touchscreen option is on);
+    mixin targets, `ServerPlaceRecipe`, `RecipeBookComponent`, `ClientLevel.tickNonPassenger`, input classes unchanged.
+- Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8), client gametest 45/45; Fabric self-check also on
+  Minecraft 26.1 with Fabric API 0.145.1+26.1 (classes compiled against 26.1 are byte-identical to the 26.1.2 build).
+
 ## Log
 - 2026-11-08: template → QuickStack, all features written, both loaders compile. First client gametest run.
 - 2026-11-08: user feedback round 1. Lock marks made subtle (small faded padlock). Crafting from nearby now keeps

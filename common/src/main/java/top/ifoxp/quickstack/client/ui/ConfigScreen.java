@@ -174,7 +174,7 @@ public class ConfigScreen extends Screen {
         if (editsServer()) {
             ServerConfig.save();
         }
-        minecraft.gui.setScreen(parent);
+        minecraft.setScreen(parent);
     }
 
     private static final class IntSlider extends AbstractSliderButton {

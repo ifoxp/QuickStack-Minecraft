@@ -234,7 +234,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
                 minecraft.player.closeContainer();
                 QuickStackClient.find(List.of(stack));
             } else {
-                minecraft.gui.setScreen(new FindItemScreen(null));
+                minecraft.setScreen(new FindItemScreen(null));
             }
             cir.setReturnValue(true);
         }
