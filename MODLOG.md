@@ -72,6 +72,26 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
 - Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8), client gametest 45/45; Fabric self-check also on
   Minecraft 26.1 with Fabric API 0.145.1+26.1 (classes compiled against 26.1 are byte-identical to the 26.1.2 build).
 
+## 1.21.11 (branch `mc/1.21.11`, ported from `mc/26.1` 2026-11-08)
+- Minecraft 1.21.11 (last obfuscated release), Java 21 (`%USERPROFILE%\.jdks\jdk-21.0.13+9`). Fabric Loader 0.20.1,
+  Fabric API 0.141.6+1.21.11, Mod Menu 17.0.1, NeoForge 21.11.48, NeoForm 1.21.11-20251209.172050, Parchment
+  2025.12.20. Build files from template branch `1.21.11`: Gradle 8.14.3, `buildSrc/`, remapping Loom `fabric-loom`
+  1.13.6 (official Mojang mappings + Parchment, `modImplementation`), ModDevGradle 2.0.123. Loom 1.13 remaps mixins
+  without the annotation processor, so no refmap. Sources: `E:\Programing\GamesProjects\Minecraft\mc-src-1.21.11\`.
+- Metadata: Fabric `"minecraft": "~1.21.11"`; NeoForge `minecraft [1.21.11, 1.21.12)`, `neoforge [21.11,)`.
+- API differences from 26.1:
+  - `GuiGraphicsExtractor` → `GuiGraphics`; `extract*` → `render*` (`render`, `renderBackground`, button
+    `renderContents`, mixin targets `AbstractContainerScreen.renderSlot` / `renderContents`); `text`/`centeredText`/`item`
+    → `drawString`/`drawCenteredString`/`renderItem`. `blit`, 2D pose matrix, tooltips unchanged;
+  - `ContainerInput` → `ClickType`; `AbstractContainerScreen.imageWidth/imageHeight` not final (shadows without `@Final`);
+  - `Player.sendOverlayMessage(c)` → `displayClientMessage(c, true)`; `ItemStack.typeHolder()` → `getItemHolder()`;
+  - Fabric API (Yarn names): `KeyBindingHelper.registerKeyBinding`, `PayloadTypeRegistry.playS2C()/playC2S()`;
+  - client gametest: `getClientWorld()` instead of `getClientLevel()`, no `TestInput.lookAt` (the test sets yaw/pitch
+    on the client like Fabric's later implementation), `Minecraft.resizeDisplay()` instead of `resizeGui()`. Checks unchanged;
+  - same as 26.1: `Identifier`, `KeyMapping.Category`, `MouseButtonEvent`/`KeyEvent`, GLFW mouse buttons 0/1/2,
+    `ServerPlaceRecipe`, `RecipeBookComponent`, `ClientLevel.tickNonPassenger`.
+- Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8 mixin targets), client gametest 45/45.
+
 ## Log
 - 2026-11-08: template → QuickStack, all features written, both loaders compile. First client gametest run.
 - 2026-11-08: user feedback round 1. Lock marks made subtle (small faded padlock). Crafting from nearby now keeps

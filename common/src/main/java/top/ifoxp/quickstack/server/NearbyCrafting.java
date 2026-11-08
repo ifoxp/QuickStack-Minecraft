@@ -71,7 +71,7 @@ public final class NearbyCrafting {
                 for (int i = 0; i < container.getContainerSize(); i++) {
                     ItemStack stack = container.getItem(i);
                     if (!stack.isEmpty() && Inventory.isUsableForCrafting(stack)) {
-                        counts.merge(stack.typeHolder(), stack.getCount(), Integer::sum);
+                        counts.merge(stack.getItemHolder(), stack.getCount(), Integer::sum);
                     }
                 }
             }

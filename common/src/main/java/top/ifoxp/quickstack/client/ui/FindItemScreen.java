@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
@@ -160,8 +160,8 @@ public class FindItemScreen extends Screen {
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-        super.extractBackground(graphics, mouseX, mouseY, a);
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float a) {
+        super.renderBackground(graphics, mouseX, mouseY, a);
         int right = left + PANEL_WIDTH;
         int bottom = top + PANEL_HEIGHT;
         graphics.fill(left, top, right, bottom, 0xFF000000);
@@ -184,16 +184,16 @@ public class FindItemScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-        super.extractRenderState(graphics, mouseX, mouseY, a);
-        graphics.text(font, title, left + 8, top + 7, 0xFF404040, false);
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float a) {
+        super.render(graphics, mouseX, mouseY, a);
+        graphics.drawString(font, title, left + 8, top + 7, 0xFF404040, false);
 
         int first = scrollRow * COLUMNS;
         for (int i = 0; i < ROWS * COLUMNS && first + i < entries.size(); i++) {
             Entry entry = entries.get(first + i);
             int x = gridX() + (i % COLUMNS) * SLOT + 1;
             int y = gridY() + (i / COLUMNS) * SLOT + 1;
-            graphics.item(entry.stack, x, y);
+            graphics.renderItem(entry.stack, x, y);
             if (!entry.stored) {
                 graphics.fill(x, y, x + 16, y + 16, 0xB08B8B8B);
             }
@@ -210,7 +210,7 @@ public class FindItemScreen extends Screen {
             graphics.pose().pushMatrix();
             graphics.pose().translate(x + 17, y + 17);
             graphics.pose().scale(2.0F / 3.0F, 2.0F / 3.0F);
-            graphics.text(font, count, -font.width(count), -font.lineHeight + 1, 0xFFFFFFFF, true);
+            graphics.drawString(font, count, -font.width(count), -font.lineHeight + 1, 0xFFFFFFFF, true);
             graphics.pose().popMatrix();
         }
 
@@ -221,10 +221,10 @@ public class FindItemScreen extends Screen {
             long stored = entries.stream().filter(Entry::stored).count();
             status = Component.translatable("quickstack.find.summary", stored, shownSummary.radius());
         }
-        graphics.text(font, status, left + 8, gridY() + ROWS * SLOT + 4, 0xFF404040, false);
+        graphics.drawString(font, status, left + 8, gridY() + ROWS * SLOT + 4, 0xFF404040, false);
         if (maxScroll() > 0) {
             String pages = (scrollRow + 1) + "/" + (maxScroll() + 1);
-            graphics.text(font, pages, left + PANEL_WIDTH - 8 - font.width(pages), gridY() + ROWS * SLOT + 4, 0xFF404040, false);
+            graphics.drawString(font, pages, left + PANEL_WIDTH - 8 - font.width(pages), gridY() + ROWS * SLOT + 4, 0xFF404040, false);
         }
 
         Entry hovered = entryAt(mouseX, mouseY);

@@ -1,7 +1,7 @@
 package top.ifoxp.quickstack.client.ui;
 
 import java.util.function.IntSupplier;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -58,7 +58,7 @@ public class IconButton extends AbstractButton {
     }
 
     @Override
-    protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+    protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float a) {
         reposition();
         int x = getX();
         int y = getY();
@@ -68,12 +68,12 @@ public class IconButton extends AbstractButton {
         drawIcon(graphics, icon, x + 1, y + 1);
     }
 
-    public static void drawIcon(GuiGraphicsExtractor graphics, Icon icon, int x, int y) {
+    public static void drawIcon(GuiGraphics graphics, Icon icon, int x, int y) {
         drawIcon(graphics, icon, x, y, 0xFFFFFFFF);
     }
 
     /** {@code color} is ARGB; its alpha fades the icon. */
-    public static void drawIcon(GuiGraphicsExtractor graphics, Icon icon, int x, int y, int color) {
+    public static void drawIcon(GuiGraphics graphics, Icon icon, int x, int y, int color) {
         graphics.blit(RenderPipelines.GUI_TEXTURED, ICONS, x, y, icon.u(), 0, 8, 8, ATLAS_WIDTH, ATLAS_HEIGHT, color);
     }
 

@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
@@ -16,7 +16,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
@@ -47,14 +47,14 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
 
     @Shadow protected int leftPos;
     @Shadow protected int topPos;
-    @Shadow @Final protected int imageWidth;
-    @Shadow @Final protected int imageHeight;
+    @Shadow protected int imageWidth;
+    @Shadow protected int imageHeight;
     @Shadow protected int titleLabelY;
     @Shadow protected int inventoryLabelY;
     @Shadow protected @Nullable Slot hoveredSlot;
     @Shadow @Final protected AbstractContainerMenu menu;
 
-    @Shadow protected abstract void slotClicked(Slot slot, int slotId, int buttonNum, ContainerInput containerInput);
+    @Shadow protected abstract void slotClicked(Slot slot, int slotId, int buttonNum, ClickType clickType);
 
     @Shadow
     private @Nullable Slot getHoveredSlot(double x, double y) {
@@ -82,8 +82,8 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
         this.addRenderableOnly(renderable);
     }
 
-    @Inject(method = "extractSlot", at = @At("RETURN"))
-    private void quickstack$drawLock(GuiGraphicsExtractor graphics, Slot slot, int mouseX, int mouseY, CallbackInfo ci) {
+    @Inject(method = "renderSlot", at = @At("RETURN"))
+    private void quickstack$drawLock(GuiGraphics graphics, Slot slot, int mouseX, int mouseY, CallbackInfo ci) {
         ScreenButtons.drawSlotOverlay(graphics, slot);
     }
 
@@ -128,8 +128,8 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
     }
 
     /** The "Shift only" mode: no button needed, checked every frame. */
-    @Inject(method = "extractContents", at = @At("TAIL"))
-    private void quickstack$hoverSweep(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
+    @Inject(method = "renderContents", at = @At("TAIL"))
+    private void quickstack$hoverSweep(GuiGraphics graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
         if (ClientConfig.get().shiftDrag != ClientConfig.ShiftDrag.SHIFT_ONLY
                 || (Object) this instanceof CreativeModeInventoryScreen || !minecraft.hasShiftDown()) {
             quickstack$hoverSwept.clear();
@@ -143,7 +143,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
     private void quickstack$sweepSlot(Slot slot) {
         boolean locked = ScreenButtons.isLockableSlot(slot) && ClientState.isLocked(slot.getContainerSlot());
         if (slot.hasItem() && !locked && menu.getCarried().isEmpty() && quickstack$swept.add(slot)) {
-            slotClicked(slot, slot.index, 0, ContainerInput.QUICK_MOVE);
+            slotClicked(slot, slot.index, 0, ClickType.QUICK_MOVE);
         }
     }
 
@@ -181,7 +181,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
             if (carried.isEmpty() || !fits || !slot.mayPlace(carried)) {
                 return;
             }
-            slotClicked(slot, slot.index, 1, ContainerInput.PICKUP);
+            slotClicked(slot, slot.index, 1, ClickType.PICKUP);
         }
         cir.setReturnValue(true);
     }
@@ -192,7 +192,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
         if (slot == null || minecraft.player == null || !menu.getCarried().isEmpty() || !QuickStackClient.serverHasMod()) {
             return;
         }
-        // Mouse buttons are GLFW numbers in 26.2 (left = 0). The event's modifiers can miss a held Alt, so ask the keyboard too.
+        // Mouse buttons are GLFW numbers in 1.21.11 (left = 0). The event's modifiers can miss a held Alt, so ask the keyboard too.
         boolean alt = event.hasAltDown() || minecraft.hasAltDown();
         if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && alt && ScreenButtons.isLockableSlot(slot)) {
             QuickStackClient.toggleLock(slot.getContainerSlot());

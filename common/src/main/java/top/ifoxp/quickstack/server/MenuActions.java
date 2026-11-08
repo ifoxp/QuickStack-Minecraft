@@ -276,6 +276,6 @@ public final class MenuActions {
             Services.PLATFORM.setExcluded(part, excluded);
             part.setChanged();
         }
-        player.sendOverlayMessage(Component.translatable(excluded ? "quickstack.message.excluded" : "quickstack.message.included"));
+        player.displayClientMessage(Component.translatable(excluded ? "quickstack.message.excluded" : "quickstack.message.included"), true);
     }
 }

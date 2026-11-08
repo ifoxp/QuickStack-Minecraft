@@ -46,7 +46,7 @@ public final class QuickStackClient {
             return false;
         }
         if (!serverHasMod()) {
-            minecraft.player.sendOverlayMessage(Component.translatable("quickstack.message.server_missing"));
+            minecraft.player.displayClientMessage(Component.translatable("quickstack.message.server_missing"), true);
             return false;
         }
         return true;
@@ -94,7 +94,7 @@ public final class QuickStackClient {
             return;
         }
         Services.client().sendToServer(new Payloads.FindItems(
-                stacks.stream().map(ItemStack::typeHolder).distinct().limit(Payloads.FindItems.MAX).toList()));
+                stacks.stream().map(ItemStack::getItemHolder).distinct().limit(Payloads.FindItems.MAX).toList()));
     }
 
     // ---- ticks ----

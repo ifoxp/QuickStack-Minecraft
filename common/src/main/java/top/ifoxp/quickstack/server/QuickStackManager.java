@@ -81,13 +81,13 @@ public final class QuickStackManager {
 
         List<ContainerTarget> targets = ContainerScanner.find(player, config.quickStackRadius, ContainerScanner.Purpose.QUICK_STACK);
         if (targets.isEmpty()) {
-            player.sendOverlayMessage(Component.translatable("quickstack.message.no_containers"));
+            player.displayClientMessage(Component.translatable("quickstack.message.no_containers"), true);
             return;
         }
 
         List<Allocation> allocations = plan(player, targets);
         if (allocations.isEmpty()) {
-            player.sendOverlayMessage(Component.translatable("quickstack.message.nothing_to_stack"));
+            player.displayClientMessage(Component.translatable("quickstack.message.nothing_to_stack"), true);
             return;
         }
         player.getInventory().setChanged();
@@ -103,7 +103,7 @@ public final class QuickStackManager {
             containers.add(allocation.target().pos());
             items += allocation.stack().getCount();
         }
-        player.sendOverlayMessage(Component.translatable("quickstack.message.stacked", items, containers.size()));
+        player.displayClientMessage(Component.translatable("quickstack.message.stacked", items, containers.size()), true);
     }
 
     /** Takes the matched items out of the player's inventory and decides where each part goes. */
@@ -282,7 +282,7 @@ public final class QuickStackManager {
         Batch batch = LAST_BATCH.remove(player.getUUID());
         long undoTicks = ServerConfig.get().undoSeconds * 20L;
         if (batch == null || server.getTickCount() - batch.createdTick > undoTicks) {
-            player.sendOverlayMessage(Component.translatable("quickstack.message.nothing_to_undo"));
+            player.displayClientMessage(Component.translatable("quickstack.message.nothing_to_undo"), true);
             return;
         }
         boolean cancelledFlights = false;
@@ -314,6 +314,6 @@ public final class QuickStackManager {
             target.container().setChanged();
         }
         player.containerMenu.broadcastChanges();
-        player.sendOverlayMessage(Component.translatable("quickstack.message.undone"));
+        player.displayClientMessage(Component.translatable("quickstack.message.undone"), true);
     }
 }

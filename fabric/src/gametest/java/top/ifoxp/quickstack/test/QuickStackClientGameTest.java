@@ -69,7 +69,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
     @Override
     public void runTest(ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
-            world.getClientLevel().waitForChunksRender();
+            world.getClientWorld().waitForChunksRender();
             TestServerContext server = world.getServer();
             server.runCommand("gamemode survival @a");
             context.waitTicks(20);
@@ -119,8 +119,8 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
             inventory.setItem(12, new ItemStack(Items.DIRT, 10));
             inventory.setItem(13, new ItemStack(Items.DIAMOND_SWORD));
         });
-        context.getInput().lookAt(180, 20);
-        world.getClientLevel().waitForChunksRender();
+        lookAt(context, 180, 20);
+        world.getClientWorld().waitForChunksRender();
         context.waitTicks(10);
 
         context.getInput().pressKey(QuickStackClient.QUICK_STACK);
@@ -160,7 +160,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         context.getInput().resizeWindow(1920, 1080);
         context.runOnClient(mc -> {
             mc.options.guiScale().set(4);
-            mc.resizeGui();
+            mc.resizeDisplay();
         });
         context.setScreen(() -> new ConfigScreen(null));
         context.waitTicks(3);
@@ -176,7 +176,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         context.setScreen(() -> null);
         context.runOnClient(mc -> {
             mc.options.guiScale().set(0);
-            mc.resizeGui();
+            mc.resizeDisplay();
         });
         context.getInput().resizeWindow(854, 480);
         context.waitTicks(3);
@@ -534,8 +534,8 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
                 inventory.setItem(i, new ItemStack(kinds[i % kinds.length], 64));
             }
         });
-        world.getClientLevel().waitForChunksRender();
-        context.getInput().lookAt(0, 10);
+        world.getClientWorld().waitForChunksRender();
+        lookAt(context, 0, 10);
         context.waitTicks(110);
         long baseline = world.getServer().computeOnServer(s -> max(s.getTickTimesNanos()));
 
@@ -612,8 +612,8 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
             }
         });
         LOG.info("[qs-test] massive: {} chests, {} full stacks stored", chests.size(), chests.size() * 26);
-        world.getClientLevel().waitForChunksRender();
-        context.getInput().lookAt(0, 10);
+        world.getClientWorld().waitForChunksRender();
+        lookAt(context, 0, 10);
         context.waitTicks(110);
         long baseline = world.getServer().computeOnServer(s -> max(s.getTickTimesNanos()));
 
@@ -670,12 +670,20 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
     // ---- helpers ----
 
     /**
-     * Lets packets sent so far reach the other side and the answers come back. Fabric API for 26.1 has no
+     * Lets packets sent so far reach the other side and the answers come back. Fabric API for 1.21.11 has no
      * TestServerConnection.waitFor*Packets; its network synchronizer handles every packet within the server and client
      * task phases of the next tick, so one tick covers a client -> server -> client round trip.
      */
     private static void waitForPackets(ClientGameTestContext context) {
         context.waitTick();
+    }
+
+    /** Turns the player's view; Fabric API for 1.21.11 has no TestInput.lookAt (same as its later implementation). */
+    private static void lookAt(ClientGameTestContext context, float yaw, float pitch) {
+        context.runOnClient(mc -> {
+            mc.player.setYRot(yaw);
+            mc.player.setXRot(pitch);
+        });
     }
 
     private void check(String name, boolean ok, String detail) {
@@ -719,7 +727,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         clickAt(context, guiX, guiY, InputConstants.MOUSE_BUTTON_LEFT);
     }
 
-    /** Mouse buttons are GLFW numbers in 26.2: left = 0, right = 1, middle = 2 (InputConstants.MOUSE_BUTTON_*). */
+    /** Mouse buttons are GLFW numbers in 1.21.11: left = 0, right = 1, middle = 2 (InputConstants.MOUSE_BUTTON_*). */
     private static void clickAt(ClientGameTestContext context, double guiX, double guiY, int button) {
         double scale = context.computeOnClient(mc -> (double) mc.getWindow().getScreenWidth() / mc.getWindow().getGuiScaledWidth());
         context.getInput().setCursorPos(guiX * scale, guiY * scale);
