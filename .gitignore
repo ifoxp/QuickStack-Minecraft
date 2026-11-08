@@ -26,3 +26,6 @@ runs
 # python
 __pycache__/
 *.pyc
+
+# CurseForge page material (description, translations, gallery GIFs, upload guide) lives here locally only
+/publish/

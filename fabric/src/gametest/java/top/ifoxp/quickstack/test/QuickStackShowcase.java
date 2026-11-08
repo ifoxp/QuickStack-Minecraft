@@ -53,7 +53,7 @@ import top.ifoxp.quickstack.server.LockManager;
  * Records the clips for the mod page: one per feature, in a small storage room, at 30 fps rendered with exact
  * partial ticks (ShowcaseOverlay draws the pointer and the key badge into the picture). Only runs with
  * {@code -Dquickstack.showcase=true} ({@code ./gradlew :fabric:runClientGameTest -Pshowcase [-Pclips=a,b]}). Frames go
- * to build/showcase/<clip>/f00000.png...; publish/tools/make_media.py turns them into WebP and GIF.
+ * to build/showcase/<clip>/f00000.png...; tools/make_media.py turns them into WebP and GIF.
  */
 public class QuickStackShowcase implements FabricClientGameTest {
 

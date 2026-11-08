@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="publish/curseforge/media/quick_stack.webp" width="820" alt="Items flying from the player into nearby chests">
+  <img src="docs/media/quick_stack.webp" width="820" alt="Items flying from the player into nearby chests">
 </p>
 
 ---
@@ -36,20 +36,20 @@ their lids as the items land.
 <kbd>Alt</kbd> + click a slot to lock it. Locked slots never leave — not by quick stack, not by *deposit all*, not by
 sorting. The hotbar starts locked; armour and offhand are never touched.
 
-<p align="center"><img src="publish/curseforge/media/lock_slots.webp" width="760" alt="Locking slots, then quick stacking around them"></p>
+<p align="center"><img src="docs/media/lock_slots.webp" width="760" alt="Locking slots, then quick stacking around them"></p>
 
 ### Chest buttons
 Every chest, barrel and shulker box gets a row of small buttons: **quick stack into this chest**, **restock**
 (take what you carry, leave 1 of each behind — configurable), **deposit all**, **loot all**, **sort** and
 **exclude** the chest from quick stack to nearby.
 
-<p align="center"><img src="publish/curseforge/media/chest_buttons.webp" width="680" alt="Restock, quick stack into the chest and sort"></p>
+<p align="center"><img src="docs/media/chest_buttons.webp" width="680" alt="Restock, quick stack into the chest and sort"></p>
 
 ### Sorting
 Sort your inventory or any chest with a button, a key or a middle click — by category, name or count. Partial stacks
 are merged; locked slots stay where they are.
 
-<p align="center"><img src="publish/curseforge/media/sort.webp" width="560" alt="Sorting the inventory"></p>
+<p align="center"><img src="docs/media/sort.webp" width="560" alt="Sorting the inventory"></p>
 
 <table>
 <tr>
@@ -59,7 +59,7 @@ are merged; locked slots stay where they are.
 Hold <kbd>Shift</kbd> + left mouse button and sweep over slots: each one you pass is shift-clicked into the other
 inventory.
 
-<img src="publish/curseforge/media/shift_sweep.webp" alt="Shift sweep moving a row into a chest">
+<img src="docs/media/shift_sweep.webp" alt="Shift sweep moving a row into a chest">
 
 </td>
 <td width="50%" valign="top">
@@ -67,7 +67,7 @@ inventory.
 ### Mouse wheel, one item at a time
 Wheel up over a stack picks up one more item, wheel down puts one back — like right clicks, only faster.
 
-<img src="publish/curseforge/media/wheel.webp" alt="Moving diamonds one by one with the mouse wheel">
+<img src="docs/media/wheel.webp" alt="Moving diamonds one by one with the mouse wheel">
 
 </td>
 </tr>
@@ -77,13 +77,13 @@ Wheel up over a stack picks up one more item, wheel down puts one back — like 
 The recipe book counts the items in chests around you, and the crafting grid takes missing ingredients straight from
 them. Whatever is left over goes back to the chest it came from when you close the table.
 
-<p align="center"><img src="publish/curseforge/media/crafting.webp" width="760" alt="Crafting a chest from planks stored in a nearby chest"></p>
+<p align="center"><img src="docs/media/crafting.webp" width="760" alt="Crafting a chest from planks stored in a nearby chest"></p>
 
 ### Find items
 <kbd>F6</kbd> opens a grid of everything stored in the chests around you. Type to filter, click an item, and the
 chests holding it light up with a column of sparkles you can see through walls.
 
-<p align="center"><img src="publish/curseforge/media/search.webp" width="760" alt="Searching for iron and the chest lighting up"></p>
+<p align="center"><img src="docs/media/search.webp" width="760" alt="Searching for iron and the chest lighting up"></p>
 
 ### Undo
 Stacked the wrong thing? Bind the *Undo* key and take the last quick stack back.
@@ -165,7 +165,7 @@ Minecraft 26.3 needs **Java 25**.
 ./gradlew build -x javadoc                 # jars in fabric/build/libs and neoforge/build/libs
 ./gradlew :fabric:runClient                # dev client
 ./gradlew :fabric:runClientGameTest        # 45 scripted checks in a real client
-./gradlew :fabric:runClientGameTest -Pshowcase   # records the clips above (publish/tools/make_media.py builds them)
+./gradlew :fabric:runClientGameTest -Pshowcase   # records the clips above (tools/make_media.py builds them)
 ```
 
 The project follows the MultiLoader layout: `common/` holds all the logic, `fabric/` and `neoforge/` are thin

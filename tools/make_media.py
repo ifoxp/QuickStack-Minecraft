@@ -1,22 +1,23 @@
 """Builds the animated images for the README and the CurseForge page from the showcase frames.
 
     ./gradlew :fabric:runClientGameTest -Pshowcase [-Pclips=quick_stack,wheel]
-    python publish/tools/make_media.py [clip...]
+    python tools/make_media.py [clip...]
 
 QuickStackShowcase renders every clip at 30 fps with exact partial ticks into
 build/showcase/<clip>/f00000.png..., the pointer and the key badge already drawn by the
-game. This script crops each clip to what matters and writes, into publish/curseforge/media/:
-- <clip>.webp — full colour, 30 fps; UI clips lossless (README, CurseForge description via a link)
-- <clip>.gif  — 256 colours, one palette per clip, for places that only take GIF
+game. This script crops each clip to what matters and writes:
+- docs/media/<clip>.webp — full colour, 30 fps; UI clips lossless (README, CurseForge description via a link)
+- publish/curseforge/media/<clip>.gif — 256 colours, one palette per clip, for places that only take GIF
 """
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 FRAMES = ROOT / 'build/showcase'
-OUT = ROOT / 'publish/curseforge/media'
+OUT = ROOT / 'docs/media'                 # WebP for the README (tracked)
+GIF_OUT = ROOT / 'publish/curseforge/media'  # GIF for the CurseForge gallery (local only)
 
 FPS = 30
 UI_CROP = (220, 20, 840, 700)  # x, y, width, height in the 1280x720 frame
@@ -55,11 +56,12 @@ def main():
     if shutil.which('ffmpeg') is None:
         sys.exit('ffmpeg is required (winget install Gyan.FFmpeg)')
     OUT.mkdir(parents=True, exist_ok=True)
+    GIF_OUT.mkdir(parents=True, exist_ok=True)
     for clip in sys.argv[1:] or list(CLIPS):
         crop, width, lossless = CLIPS[clip]
         frames = str(FRAMES / clip / 'f%05d.png')
         webp = OUT / f'{clip}.webp'
-        gif = OUT / f'{clip}.gif'
+        gif = GIF_OUT / f'{clip}.gif'
         # libwebp_anim stores only what changed between frames, which keeps these clips small
         quality = ['-lossless', '1', '-compression_level', '4'] if lossless else ['-quality', str(WEBP_QUALITY), '-compression_level', '6']
         run(['-i', frames, '-vf', base_filter(crop, width), '-c:v', 'libwebp_anim', *quality, '-loop', '0', str(webp)])

@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="publish/curseforge/media/quick_stack.webp" width="820" alt="Предмети летять від гравця у скрині поруч">
+  <img src="docs/media/quick_stack.webp" width="820" alt="Предмети летять від гравця у скрині поруч">
 </p>
 
 ---
@@ -35,20 +35,20 @@
 <kbd>Alt</kbd> + клік по слоту фіксує його. Зафіксовані слоти нікуди не діваються: ні при складанні, ні при «покласти
 все», ні при сортуванні. Хотбар зафіксований одразу; броню і другу руку мод не чіпає ніколи.
 
-<p align="center"><img src="publish/curseforge/media/lock_slots.webp" width="760" alt="Фіксація слотів і складання навколо них"></p>
+<p align="center"><img src="docs/media/lock_slots.webp" width="760" alt="Фіксація слотів і складання навколо них"></p>
 
 ### Кнопки скрині
 У кожної скрині, бочки й шалкера є рядок маленьких кнопок: **скласти в цю скриню**, **поповнити** (забрати те, що
 вже є в інвентарі, лишивши по 1 — налаштовується), **покласти все**, **забрати все**, **сортувати** і **виключити**
 скриню зі складання в найближчі.
 
-<p align="center"><img src="publish/curseforge/media/chest_buttons.webp" width="680" alt="Поповнення, складання в скриню і сортування"></p>
+<p align="center"><img src="docs/media/chest_buttons.webp" width="680" alt="Поповнення, складання в скриню і сортування"></p>
 
 ### Сортування
 Інвентар чи будь-яку скриню — кнопкою, клавішею або середньою кнопкою миші. За категорією, назвою чи кількістю.
 Неповні стаки зливаються, зафіксовані слоти лишаються на місці.
 
-<p align="center"><img src="publish/curseforge/media/sort.webp" width="560" alt="Сортування інвентаря"></p>
+<p align="center"><img src="docs/media/sort.webp" width="560" alt="Сортування інвентаря"></p>
 
 <table>
 <tr>
@@ -57,7 +57,7 @@
 ### Протягування з Shift
 Затисни <kbd>Shift</kbd> + ліву кнопку миші й веди по слотах — кожен слот переноситься, як від Shift+кліку.
 
-<img src="publish/curseforge/media/shift_sweep.webp" alt="Протягування з Shift переносить ряд у скриню">
+<img src="docs/media/shift_sweep.webp" alt="Протягування з Shift переносить ряд у скриню">
 
 </td>
 <td width="50%" valign="top">
@@ -65,7 +65,7 @@
 ### Колесико — по одному предмету
 Колесико вгору над стаком бере ще один предмет, вниз — кладе один назад. Як ПКМ, тільки швидше.
 
-<img src="publish/curseforge/media/wheel.webp" alt="Алмази переносяться по одному колесиком">
+<img src="docs/media/wheel.webp" alt="Алмази переносяться по одному колесиком">
 
 </td>
 </tr>
@@ -75,13 +75,13 @@
 Книга рецептів враховує предмети зі скринь навколо, а сітка крафту бере відсутні інгредієнти прямо з них. Те, що
 лишилося, повертається в ту саму скриню, коли закриваєш верстак.
 
-<p align="center"><img src="publish/curseforge/media/crafting.webp" width="760" alt="Крафт скрині з дощок, що лежать у скрині поруч"></p>
+<p align="center"><img src="docs/media/crafting.webp" width="760" alt="Крафт скрині з дощок, що лежать у скрині поруч"></p>
 
 ### Пошук предметів
 <kbd>F6</kbd> відкриває сітку всього, що лежить у скринях навколо. Набирай назву, клікай предмет — і скрині з ним
 підсвітяться стовпом іскор, який видно крізь стіни.
 
-<p align="center"><img src="publish/curseforge/media/search.webp" width="760" alt="Пошук заліза і підсвічена скриня"></p>
+<p align="center"><img src="docs/media/search.webp" width="760" alt="Пошук заліза і підсвічена скриня"></p>
 
 ### Скасування
 Склав не те? Признач клавішу «Скасувати» — і останнє складання повернеться.
@@ -163,7 +163,7 @@ Minecraft 26.3 потребує **Java 25**.
 ./gradlew build -x javadoc                 # jar-файли в fabric/build/libs і neoforge/build/libs
 ./gradlew :fabric:runClient                # клієнт для розробки
 ./gradlew :fabric:runClientGameTest        # 45 сценарних перевірок у справжньому клієнті
-./gradlew :fabric:runClientGameTest -Pshowcase   # записує кліпи вище (збирає їх publish/tools/make_media.py)
+./gradlew :fabric:runClientGameTest -Pshowcase   # записує кліпи вище (збирає їх tools/make_media.py)
 ```
 
 Проєкт побудований за схемою MultiLoader: `common/` містить усю логіку, а `fabric/` і `neoforge/` — тонкі адаптери
