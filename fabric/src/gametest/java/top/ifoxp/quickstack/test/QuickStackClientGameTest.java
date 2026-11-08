@@ -47,7 +47,11 @@ import top.ifoxp.quickstack.client.ui.FindItemScreen;
 import top.ifoxp.quickstack.client.ui.IconButton;
 import top.ifoxp.quickstack.network.Payloads;
 import top.ifoxp.quickstack.platform.Services;
+import top.ifoxp.quickstack.config.ServerConfig;
+import top.ifoxp.quickstack.server.ContainerScanner;
+import top.ifoxp.quickstack.server.ItemFinder;
 import top.ifoxp.quickstack.server.LockManager;
+import top.ifoxp.quickstack.server.QuickStackManager;
 
 /**
  * Plays QuickStack the way a player does in a real client: keys, mouse clicks on the mod's buttons and on slots,
@@ -76,6 +80,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
             craftingScenario(context, world, origin);
             undoScenario(context, world, origin);
             loadScenario(context, world, origin);
+            massiveScenario(context, world, origin);
         }
         LOG.info("[qs-test] done: {} passed, {} failed", passed, failures.size());
         if (!failures.isEmpty()) {
@@ -439,6 +444,111 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
             }
             check("every item landed in its chest", total == kinds.length + 36 * 64, "chests hold " + total);
             LockManager.toggle(player, Payloads.ToggleLock.RESET_DEFAULT);
+        });
+    }
+
+    /**
+     * Worst case asked for by the user: radius 16, every free spot in three layers around the player is a chest
+     * holding 26 full stacks (one free slot each), and a full unlocked inventory is quick stacked.
+     */
+    private void massiveScenario(ClientGameTestContext context, TestSingleplayerContext world, BlockPos origin) {
+        Item[] kinds = {Items.STONE, Items.GRANITE, Items.DIORITE, Items.ANDESITE, Items.COBBLESTONE, Items.DIRT,
+                Items.OAK_LOG, Items.SPRUCE_LOG, Items.BIRCH_LOG, Items.JUNGLE_LOG, Items.ACACIA_LOG, Items.DARK_OAK_LOG,
+                Items.OAK_PLANKS, Items.SPRUCE_PLANKS, Items.BIRCH_PLANKS, Items.SAND, Items.RED_SAND, Items.GRAVEL,
+                Items.COAL, Items.IRON_INGOT, Items.GOLD_INGOT, Items.COPPER_INGOT, Items.REDSTONE, Items.LAPIS_LAZULI,
+                Items.QUARTZ, Items.BONE, Items.STRING, Items.FEATHER, Items.GUNPOWDER, Items.WHEAT_SEEDS, Items.GLASS,
+                Items.BRICKS};
+        int radius = 16;
+        BlockPos center = origin.offset(200, 0, 0);
+        Vec3 eye = Vec3.atBottomCenterOf(center).add(0, 1.62, 0);
+        List<BlockPos> chests = new ArrayList<>();
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                for (int dy = 0; dy < 3; dy++) {
+                    if (Math.abs(dx) <= 1 && Math.abs(dz) <= 1) {
+                        continue; // room for the player
+                    }
+                    BlockPos pos = center.offset(dx, dy, dz);
+                    if (Vec3.atCenterOf(pos).distanceTo(eye) <= radius) {
+                        chests.add(pos);
+                    }
+                }
+            }
+        }
+        int oldRadius = ServerConfig.get().quickStackRadius;
+        world.getServer().runOnServer(server -> {
+            ServerPlayer player = player(server);
+            ServerLevel level = player.level();
+            player.teleportTo(center.getX() + 0.5, center.getY(), center.getZ() + 0.5);
+            for (int i = 0; i < chests.size(); i++) {
+                BlockPos pos = chests.get(i);
+                level.setBlock(pos, Blocks.CHEST.defaultBlockState(), 2);
+                Container container = container(level, pos);
+                for (int slot = 0; slot < 26; slot++) {
+                    container.setItem(slot, new ItemStack(kinds[i % kinds.length], 64));
+                }
+            }
+            ServerConfig.get().quickStackRadius = radius;
+            LockManager.toggle(player, Payloads.ToggleLock.UNLOCK_ALL);
+            Inventory inventory = player.getInventory();
+            inventory.clearContent();
+            for (int i = 0; i < Inventory.INVENTORY_SIZE; i++) {
+                inventory.setItem(i, new ItemStack(kinds[i % kinds.length], 64));
+            }
+        });
+        LOG.info("[qs-test] massive: {} chests, {} full stacks stored", chests.size(), chests.size() * 26);
+        world.getConnection().waitForChunksRender();
+        context.getInput().lookAt(0, 10);
+        context.waitTicks(110);
+        long baseline = world.getServer().computeOnServer(s -> max(s.getTickTimesNanos()));
+
+        long scanNanos = world.getServer().computeOnServer(s -> {
+            long t0 = System.nanoTime();
+            ContainerScanner.find(player(s), radius, ContainerScanner.Purpose.QUICK_STACK);
+            return System.nanoTime() - t0;
+        });
+        long summaryNanos = world.getServer().computeOnServer(s -> {
+            long t0 = System.nanoTime();
+            ItemFinder.sendSummary(player(s));
+            return System.nanoTime() - t0;
+        });
+        long planNanos = world.getServer().computeOnServer(s -> {
+            long t0 = System.nanoTime();
+            QuickStackManager.requestQuickStack(player(s), true);
+            return System.nanoTime() - t0;
+        });
+        context.waitTicks(20);
+        context.takeScreenshot("qs_12_massive_hover");
+        context.waitTicks(40);
+        long worstFirst = world.getServer().computeOnServer(s -> max(s.getTickTimesNanos()));
+        context.takeScreenshot("qs_13_massive_flying");
+        context.waitTicks(60);
+        long worstSecond = world.getServer().computeOnServer(s -> max(s.getTickTimesNanos()));
+        long worst = Math.max(worstFirst, worstSecond);
+        LOG.info("[qs-test] massive: scan {} ms, search summary {} ms, plan+start {} ms, worst tick before {} ms, while landing {} ms",
+                scanNanos / 1e6, summaryNanos / 1e6, planNanos / 1e6, baseline / 1e6, worst / 1e6);
+        check("massive: planning the quick stack took under 50 ms", planNanos < 50_000_000L, planNanos / 1e6 + " ms");
+        check("massive: landing kept ticks under 50 ms", worst < 50_000_000L, worst / 1e6 + " ms");
+        world.getServer().runOnServer(server -> {
+            check("massive: every stack left the inventory", player(server).getInventory().isEmpty(), "inventory not empty");
+            Inventory inventory = player(server).getInventory();
+            for (int i = 0; i < Inventory.INVENTORY_SIZE; i++) {
+                inventory.setItem(i, new ItemStack(kinds[(i + 7) % kinds.length], 64));
+            }
+        });
+        // Second run with warm code (the first one includes JIT warm-up).
+        long warmPlanNanos = world.getServer().computeOnServer(s -> {
+            long t0 = System.nanoTime();
+            QuickStackManager.requestQuickStack(player(s), true);
+            return System.nanoTime() - t0;
+        });
+        LOG.info("[qs-test] massive: warm plan+start {} ms", warmPlanNanos / 1e6);
+        context.waitTicks(120);
+        world.getServer().runOnServer(server -> {
+            ServerPlayer player = player(server);
+            check("massive: second run emptied the inventory too", player.getInventory().isEmpty(), "inventory not empty");
+            LockManager.toggle(player, Payloads.ToggleLock.RESET_DEFAULT);
+            ServerConfig.get().quickStackRadius = oldRadius;
         });
     }
 

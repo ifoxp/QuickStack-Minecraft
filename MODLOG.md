@@ -50,3 +50,8 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
   StorageSummary), matches not stored shown faded; search results get a rising END_ROD column. Inventory buttons
   moved to a tab above the window (ClientConfig.buttonPlacement TAB/INSIDE). Mouse buttons in 26.x are SDL
   numbers (left = 1, middle = 2): fixed. Gametest: 36/36.
+- 2026-11-08: round 2. Container screens: no tab; container actions on the title row, inventory actions on the
+  "Inventory" row (tab stays for the inventory / crafting table / furnace). New quick-stack icon (arrow splitting
+  into two chests). Planning indexes only the item kinds the player can stack. Stress test: radius 16, 2352 chests
+  holding 61 152 full stacks, full inventory: scan 5 ms, plan 16 ms cold / 7 ms warm, search summary 17 ms, worst tick
+  while landing 4.8 ms. Gametest 40/40.

@@ -50,9 +50,14 @@ public final class ScreenButtons {
         ContainerScreenAccess layout = (ContainerScreenAccess) screen;
         ClientConfig config = ClientConfig.get();
 
+        boolean storage = !(screen instanceof InventoryScreen) && isStorageMenu(menu);
         if (config.showInventoryButtons) {
             boolean tabFits = layout.quickstack$topPos() >= TAB_HEIGHT;
-            if (config.buttonPlacement == ClientConfig.ButtonPlacement.TAB && tabFits) {
+            if (storage) {
+                // Container screens: the inventory's buttons sit on the "Inventory" label row, right under the
+                // container's own row, so each group is next to what it acts on and nothing looks doubled.
+                addRightAligned(add, layout, inventorySpecs(true), () -> layout.quickstack$inventoryLabelY() - 1);
+            } else if (config.buttonPlacement == ClientConfig.ButtonPlacement.TAB && tabFits) {
                 addTab(add, addRenderable, layout, inventorySpecs(true));
             } else if (screen instanceof InventoryScreen) {
                 // The free corner right of the recipe book button, under the crafting grid.
@@ -69,10 +74,7 @@ public final class ScreenButtons {
                 addRightAligned(add, layout, inventorySpecs(false), () -> layout.quickstack$inventoryLabelY() - 1);
             }
         }
-        if (screen instanceof InventoryScreen) {
-            return;
-        }
-        if (config.showContainerButtons && isStorageMenu(menu)) {
+        if (config.showContainerButtons && storage) {
             List<Spec> specs = List.of(
                     new Spec(IconButton.Icon.DEPOSIT_MATCHING, Component.translatable("quickstack.button.deposit_matching"),
                             () -> QuickStackClient.menuAction(MenuAction.DEPOSIT_MATCHING)),

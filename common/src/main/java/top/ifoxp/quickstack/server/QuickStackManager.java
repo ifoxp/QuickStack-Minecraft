@@ -109,24 +109,33 @@ public final class QuickStackManager {
 
     /** Takes the matched items out of the player's inventory and decides where each part goes. */
     private static List<Allocation> plan(ServerPlayer player, List<ContainerTarget> targets) {
+        long locks = LockManager.mask(player);
+        List<ItemStack> items = player.getInventory().getNonEquipmentItems();
+        // Only the kinds the player can stack matter; skip indexing everything else in the containers.
+        Set<Item> wanted = new HashSet<>();
+        for (int slot = 0; slot < items.size(); slot++) {
+            if (!items.get(slot).isEmpty() && !LockManager.isLocked(locks, slot)) {
+                wanted.add(items.get(slot).getItem());
+            }
+        }
         Map<Item, List<ContainerTarget>> byItem = new HashMap<>();
         for (ContainerTarget target : targets) {
-            Set<Item> present = new HashSet<>();
+            Item last = null;
             for (int i = 0; i < target.container().getContainerSize(); i++) {
-                ItemStack stack = target.container().getItem(i);
-                if (!stack.isEmpty()) {
-                    present.add(stack.getItem());
+                Item item = target.container().getItem(i).getItem();
+                if (item == last || !wanted.contains(item)) {
+                    continue;
                 }
-            }
-            for (Item item : present) {
-                byItem.computeIfAbsent(item, k -> new ArrayList<>()).add(target);
+                last = item;
+                List<ContainerTarget> list = byItem.computeIfAbsent(item, k -> new ArrayList<>());
+                if (list.isEmpty() || list.getLast() != target) {
+                    list.add(target);
+                }
             }
         }
 
         Map<ContainerTarget, ItemStack[]> simulated = new HashMap<>();
         List<Allocation> allocations = new ArrayList<>();
-        long locks = LockManager.mask(player);
-        List<ItemStack> items = player.getInventory().getNonEquipmentItems();
         for (int slot = 0; slot < items.size(); slot++) {
             ItemStack stack = items.get(slot);
             if (stack.isEmpty() || LockManager.isLocked(locks, slot)) {
