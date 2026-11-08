@@ -16,8 +16,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.StackedItemContents;
-import net.minecraft.world.inventory.AbstractCraftingMenu;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.player.StackedContents;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.CraftingMenu;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import top.ifoxp.quickstack.config.ServerConfig;
@@ -56,7 +59,17 @@ public final class NearbyCrafting {
                 && ServerConfig.get().craftFromNearby
                 && !OPTED_OUT.contains(player.getUUID())
                 && !serverPlayer.isSpectator()
-                && player.containerMenu instanceof AbstractCraftingMenu;
+                && isCraftingGrid(player.containerMenu);
+    }
+
+    /** The crafting table and the inventory's 2x2 grid (one AbstractCraftingMenu from 1.21.2). */
+    public static boolean isCraftingGrid(AbstractContainerMenu menu) {
+        return menu instanceof CraftingMenu || menu instanceof InventoryMenu;
+    }
+
+    /** What the recipe book may use: not damaged, enchanted or renamed (Inventory.isUsableForCrafting from 1.21.2). */
+    private static boolean usableForCrafting(ItemStack stack) {
+        return !stack.isDamaged() && !stack.isEnchanted() && !stack.has(DataComponents.CUSTOM_NAME);
     }
 
     private static List<ContainerTarget> containers(ServerPlayer player) {
@@ -70,7 +83,7 @@ public final class NearbyCrafting {
                 Container container = target.container();
                 for (int i = 0; i < container.getContainerSize(); i++) {
                     ItemStack stack = container.getItem(i);
-                    if (!stack.isEmpty() && Inventory.isUsableForCrafting(stack)) {
+                    if (!stack.isEmpty() && usableForCrafting(stack)) {
                         counts.merge(stack.getItemHolder(), stack.getCount(), Integer::sum);
                     }
                 }
@@ -85,7 +98,7 @@ public final class NearbyCrafting {
     }
 
     /** Adds nearby items to what the recipe placement may use. */
-    public static void account(Player player, StackedItemContents contents) {
+    public static void account(Player player, StackedContents contents) {
         if (!activeFor(player)) {
             return;
         }
@@ -111,7 +124,7 @@ public final class NearbyCrafting {
             boolean changed = false;
             for (int i = 0; i < container.getContainerSize() && count > 0; i++) {
                 ItemStack inside = container.getItem(i);
-                if (inside.isEmpty() || !inside.is(item) || !Inventory.isUsableForCrafting(inside)) {
+                if (inside.isEmpty() || !inside.is(item) || !usableForCrafting(inside)) {
                     continue;
                 }
                 ItemStack template = taken.isEmpty() ? existing : taken;

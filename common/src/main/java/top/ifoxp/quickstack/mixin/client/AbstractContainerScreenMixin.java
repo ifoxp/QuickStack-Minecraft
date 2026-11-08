@@ -11,8 +11,10 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
@@ -54,7 +56,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
     @Shadow protected abstract void slotClicked(Slot slot, int slotId, int buttonNum, ClickType clickType);
 
     @Shadow
-    private Slot getHoveredSlot(double x, double y) {
+    private Slot findSlot(double x, double y) {
         throw new AssertionError();
     }
 
@@ -106,7 +108,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
         if (!quickstack$sweeping || !hasShiftDown()) {
             return;
         }
-        Slot slot = getHoveredSlot(mouseX, mouseY);
+        Slot slot = findSlot(mouseX, mouseY);
         if (slot != null) {
             quickstack$sweepSlot(slot);
         }
@@ -140,16 +142,20 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
 
     // ---- Mouse wheel: one item at a time, like right clicks ----
 
-    @Inject(method = "mouseScrolled", at = @At("HEAD"), cancellable = true)
-    private void quickstack$wheel(double x, double y, double scrollX, double scrollY, CallbackInfoReturnable<Boolean> cir) {
+    /**
+     * Called by MouseHandlerMixin before the screen sees the wheel: before 1.21.2 AbstractContainerScreen has no
+     * mouseScrolled of its own and the stonecutter, loom and villager screens do not pass the wheel up.
+     */
+    @Override
+    public boolean quickstack$wheel(double scrollY) {
         Slot slot = hoveredSlot;
         if (!ClientConfig.get().scrollPickAmount || slot == null || scrollY == 0 || minecraft.player == null
                 || (Object) this instanceof CreativeModeInventoryScreen) {
-            return;
+            return false;
         }
         // Bundles use the wheel to choose their item.
         if (slot.getItem().has(DataComponents.BUNDLE_CONTENTS) || menu.getCarried().has(DataComponents.BUNDLE_CONTENTS)) {
-            return;
+            return false;
         }
         ItemStack carried = menu.getCarried();
         ItemStack inSlot = slot.getItem();
@@ -157,7 +163,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
             // Up: one more item from the slot onto the cursor.
             boolean fits = carried.isEmpty() || (ItemStack.isSameItemSameComponents(carried, inSlot) && carried.getCount() < carried.getMaxStackSize());
             if (inSlot.isEmpty() || !fits || !QuickStackClient.serverHasMod()) {
-                return;
+                return false;
             }
             Services.client().sendToServer(new Payloads.TakeFromSlot(menu.containerId, slot.index, 1));
             if (carried.isEmpty()) {
@@ -170,11 +176,11 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
             // Down: one item from the cursor into the slot, exactly a vanilla right click.
             boolean fits = inSlot.isEmpty() || ItemStack.isSameItemSameComponents(carried, inSlot);
             if (carried.isEmpty() || !fits || !slot.mayPlace(carried)) {
-                return;
+                return false;
             }
             slotClicked(slot, slot.index, 1, ClickType.PICKUP);
         }
-        cir.setReturnValue(true);
+        return true;
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
@@ -187,7 +193,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
         boolean alt = hasAltDown();
         if (button == InputConstants.MOUSE_BUTTON_LEFT && alt && ScreenButtons.isLockableSlot(slot)) {
             QuickStackClient.toggleLock(slot.getContainerSlot());
-            AbstractWidget.playButtonClickSound(minecraft.getSoundManager());
+            minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             cir.setReturnValue(true);
             return;
         }

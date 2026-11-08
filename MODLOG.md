@@ -96,6 +96,29 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
 - Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8), server gametest 36/36, Fabric self-check also on
   1.21.2 (Fabric API 0.106.1+1.21.2) OK.
 
+## 1.21 – 1.21.1 (branch `mc/1.21.1`, ported from `mc/1.21.3` 2026-11-08)
+- Minecraft 1.21.1 (range 1.21 – 1.21.1), Java 21. Fabric Loader 0.20.1, Fabric API 0.116.17+1.21.1, Mod Menu 11.0.5,
+  NeoForge 21.1.265, NeoForm 1.21.1-20240808.144430. Tooling as on `mc/1.21.4`; NeoForge run `data()` (no `clientData`).
+  Sources: `E:\Programing\GamesProjects\Minecraft\mc-src-1.21.1\`.
+- API differences from 1.21.3:
+  - recipe book before the 1.21.2 rewrite: `ServerPlaceRecipe` is an instance per click with `StackedContents`.
+    `ServerPlaceRecipeMixin` counts nearby items after `recipeClicked` fills `stackedContents`, `moveItemToGrid(Slot,
+    ItemStack, int)` pulls from containers when `findSlotMatchingUnusedItem` finds nothing, `clearGrid` returns loans
+    (same wrap). No `AbstractCraftingMenu`: crafting grids are `CraftingMenu` / `InventoryMenu`
+    (`NearbyCrafting.isCraftingGrid`); "usable for crafting" = not damaged / enchanted / renamed (vanilla's rule).
+    Client `RecipeBookComponentMixin` wraps `RecipeBookMenu.fillCraftSlotsStackedContents(StackedContents)`;
+  - `AbstractContainerScreen` has no `mouseScrolled` and stonecutter / loom / villager screens do not call super:
+    the wheel goes through new `MouseHandlerMixin` (wraps `Screen.mouseScrolled` in `MouseHandler.onScroll`, also
+    under NeoForge's patch) to `ContainerScreenAccess.quickstack$wheel`; self-check covers `MouseHandler` (9 targets);
+    `findSlot` instead of `getHoveredSlot`;
+  - `blit(texture, x, y, u, v, w, h, texW, texH)` without colour: icon tint/alpha via `setColor` + blend;
+    click sound via `SimpleSoundInstance.forUI`; `Inventory.getSelectionSize()` (constant private);
+    no `Vec3.STREAM_CODEC` (three doubles);
+  - gametest: `handlePlacement(max, recipe, player)` needs the recipe in the player's book (awarded first), grid slots
+    from `RecipeBookMenu` indices, `byKey(ResourceLocation)`.
+- Verified: build, `[selfcheck] OK` on Fabric and NeoForge (9/9), server gametest 36/36, Fabric self-check also on 1.21
+  (Fabric API 0.102.0+1.21) OK. Client recipe book counting nearby items and the icon tint are not covered by a test.
+
 ## Log
 - 2026-11-08: template → QuickStack, all features written, both loaders compile. First client gametest run.
 - 2026-11-08: user feedback round 1. Lock marks made subtle (small faded padlock). Crafting from nearby now keeps

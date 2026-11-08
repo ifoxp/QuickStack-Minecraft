@@ -9,10 +9,8 @@ import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -20,9 +18,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.AbstractCraftingMenu;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -259,10 +257,10 @@ public class QuickStackServerGameTest implements FabricGameTest {
                 planksSeen += count(target.container(), Items.OAK_PLANKS);
             }
             check("the server sees the planks in the nearby chest", planksSeen == 10, "sees " + planksSeen);
-            AbstractCraftingMenu menu = (AbstractCraftingMenu) player.containerMenu;
-            menu.handlePlacement(false, false, stick(), level, player.getInventory());
+            RecipeBookMenu<?, ?> menu = (RecipeBookMenu<?, ?>) player.containerMenu;
+            menu.handlePlacement(false, stick(), player);
             int inGrid = 0;
-            for (Slot slot : menu.getInputGridSlots()) {
+            for (Slot slot : gridSlots(menu)) {
                 if (slot.getItem().is(Items.OAK_PLANKS)) {
                     inGrid += slot.getItem().getCount();
                 }
@@ -270,7 +268,8 @@ public class QuickStackServerGameTest implements FabricGameTest {
             check("recipe placement pulled planks from the chest into the grid", inGrid == 2, "grid has " + inGrid);
             check("the chest gave exactly those planks", count(container(chest), Items.OAK_PLANKS) == 8,
                     "chest has " + count(container(chest), Items.OAK_PLANKS));
-            check("the result slot shows sticks", menu.getResultSlot().getItem().is(Items.STICK), "result = " + menu.getResultSlot().getItem());
+            Slot result = menu.getSlot(menu.getResultSlotIndex());
+            check("the result slot shows sticks", result.getItem().is(Items.STICK), "result = " + result.getItem());
         });
         step(3, () -> player.closeContainer());
         step(3, () -> {
@@ -283,12 +282,13 @@ public class QuickStackServerGameTest implements FabricGameTest {
             open(table);
         });
         step(3, () -> {
-            AbstractCraftingMenu menu = (AbstractCraftingMenu) player.containerMenu;
-            menu.handlePlacement(true, false, stick(), level, player.getInventory());
+            RecipeBookMenu<?, ?> menu = (RecipeBookMenu<?, ?>) player.containerMenu;
+            menu.handlePlacement(true, stick(), player);
             check("max placement emptied the chest of planks", count(container(chest), Items.OAK_PLANKS) == 0,
                     "chest has " + count(container(chest), Items.OAK_PLANKS));
-            ItemStack result = menu.getResultSlot().getItem().copy();
-            menu.getResultSlot().onTake(player, result);
+            Slot resultSlot = menu.getSlot(menu.getResultSlotIndex());
+            ItemStack result = resultSlot.getItem().copy();
+            resultSlot.onTake(player, result);
             player.closeContainer();
         });
         step(3, () -> {
@@ -421,11 +421,23 @@ public class QuickStackServerGameTest implements FabricGameTest {
         throw new AssertionError("no cobblestone in the chest");
     }
 
+    /** The stick recipe, unlocked for the player (before 1.21.2 placement only takes recipes from the recipe book). */
     private RecipeHolder<?> stick() {
         MinecraftServer server = level.getServer();
-        return server.getRecipeManager()
-                .byKey(ResourceKey.create(Registries.RECIPE, ResourceLocation.withDefaultNamespace("stick")))
-                .orElseThrow();
+        RecipeHolder<?> recipe = server.getRecipeManager().byKey(ResourceLocation.withDefaultNamespace("stick")).orElseThrow();
+        player.awardRecipes(List.of(recipe));
+        return recipe;
+    }
+
+    /** The crafting grid (AbstractCraftingMenu.getInputGridSlots from 1.21.2). */
+    private static List<Slot> gridSlots(RecipeBookMenu<?, ?> menu) {
+        List<Slot> slots = new ArrayList<>();
+        for (int i = 0; i < menu.getGridWidth() * menu.getGridHeight() + 1; i++) {
+            if (i != menu.getResultSlotIndex()) {
+                slots.add(menu.getSlot(i));
+            }
+        }
+        return slots;
     }
 
     private Container container(BlockPos pos) {

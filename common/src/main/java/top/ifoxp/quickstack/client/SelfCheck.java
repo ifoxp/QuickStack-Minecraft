@@ -18,6 +18,7 @@ public final class SelfCheck {
             "net.minecraft.client.gui.screens.inventory.ContainerScreen",
             "net.minecraft.client.gui.screens.inventory.CraftingScreen",
             "net.minecraft.client.gui.screens.recipebook.RecipeBookComponent",
+            "net.minecraft.client.MouseHandler",
             "net.minecraft.recipebook.ServerPlaceRecipe",
             "net.minecraft.world.inventory.AbstractContainerMenu",
             "net.minecraft.world.CompoundContainer");

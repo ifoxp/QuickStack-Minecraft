@@ -1,11 +1,11 @@
 package top.ifoxp.quickstack.client.ui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.function.IntSupplier;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import top.ifoxp.quickstack.QuickStack;
@@ -72,7 +72,11 @@ public class IconButton extends AbstractButton {
 
     /** {@code color} is ARGB; its alpha fades the icon. */
     public static void drawIcon(GuiGraphics graphics, Icon icon, int x, int y, int color) {
-        graphics.blit(RenderType::guiTextured, ICONS, x, y, icon.u(), 0, 8, 8, ATLAS_WIDTH, ATLAS_HEIGHT, color);
+        // Before 1.21.2 blit takes no colour: tint through the shader colour, with blending for the alpha.
+        graphics.setColor((color >> 16 & 0xFF) / 255.0F, (color >> 8 & 0xFF) / 255.0F, (color & 0xFF) / 255.0F, (color >>> 24) / 255.0F);
+        RenderSystem.enableBlend();
+        graphics.blit(ICONS, x, y, icon.u(), 0, 8, 8, ATLAS_WIDTH, ATLAS_HEIGHT);
+        graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override

@@ -6,7 +6,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.inventory.AbstractCraftingMenu;
 import net.minecraft.world.item.ItemStack;
 import top.ifoxp.quickstack.QuickStack;
 import top.ifoxp.quickstack.client.ui.ConfigScreen;
@@ -14,6 +13,7 @@ import top.ifoxp.quickstack.config.ClientConfig;
 import top.ifoxp.quickstack.network.MenuAction;
 import top.ifoxp.quickstack.network.Payloads;
 import top.ifoxp.quickstack.platform.Services;
+import top.ifoxp.quickstack.server.NearbyCrafting;
 
 /** Client side: key mappings, the actions behind the buttons and the handlers of server packets. */
 public final class QuickStackClient {
@@ -131,7 +131,7 @@ public final class QuickStackClient {
     /** Keeps the recipe book's view of nearby containers fresh while a crafting grid is open. */
     private static void tickNearbyItems(Minecraft minecraft) {
         boolean crafting = minecraft.screen instanceof AbstractContainerScreen<?> screen
-                && screen.getMenu() instanceof AbstractCraftingMenu;
+                && NearbyCrafting.isCraftingGrid(screen.getMenu());
         if (!crafting) {
             nearbyRefresh = 0;
             return;

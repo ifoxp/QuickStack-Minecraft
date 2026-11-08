@@ -12,7 +12,7 @@ import top.ifoxp.quickstack.platform.Services;
  */
 public final class LockManager {
 
-    public static final long HOTBAR_MASK = (1L << Inventory.SELECTION_SIZE) - 1;
+    public static final long HOTBAR_MASK = (1L << Inventory.getSelectionSize()) - 1;
     public static final long ALL_MASK = (1L << Inventory.INVENTORY_SIZE) - 1;
     public static final long DEFAULT_MASK = HOTBAR_MASK;
 

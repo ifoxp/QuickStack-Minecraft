@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img alt="Minecraft 1.21.2–1.21.3" src="https://img.shields.io/badge/Minecraft-1.21.2%E2%80%931.21.3-62B47A?style=flat-square">
+  <img alt="Minecraft 1.21–1.21.1" src="https://img.shields.io/badge/Minecraft-1.21%E2%80%931.21.1-62B47A?style=flat-square">
   <img alt="Fabric" src="https://img.shields.io/badge/Fabric-supported-DBD0B4?style=flat-square">
   <img alt="NeoForge" src="https://img.shields.io/badge/NeoForge-supported-E36D29?style=flat-square">
   <img alt="26 languages" src="https://img.shields.io/badge/languages-26-4C8BF5?style=flat-square">
@@ -107,7 +107,7 @@ All keys can be changed in *Options → Controls → QuickStack*.
 
 | | |
 |---|---|
-| Minecraft | **1.21.2 – 1.21.3** |
+| Minecraft | **1.21 – 1.21.1** |
 | Loader | **Fabric** (with [Fabric API](https://modrinth.com/mod/fabric-api)) or **NeoForge** |
 | Side | **client and server** — singleplayer works out of the box |
 | Optional | [Mod Menu](https://modrinth.com/mod/modmenu) (Fabric) for the settings button in the mod list |
@@ -159,7 +159,7 @@ Spotted a clumsy translation? Issues and pull requests are welcome — the files
 
 ## Building from source
 
-Minecraft 1.21.2 – 1.21.3 needs **Java 21**.
+Minecraft 1.21 – 1.21.1 needs **Java 21**.
 
 ```sh
 ./gradlew build -x javadoc                 # jars in fabric/build/libs and neoforge/build/libs

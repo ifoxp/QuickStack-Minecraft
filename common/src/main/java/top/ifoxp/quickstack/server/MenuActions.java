@@ -234,12 +234,12 @@ public final class MenuActions {
         Inventory inventory = player.getInventory();
         long locks = LockManager.mask(player);
         List<Integer> indices = new ArrayList<>();
-        for (int i = Inventory.SELECTION_SIZE; i < Inventory.INVENTORY_SIZE; i++) {
+        for (int i = Inventory.getSelectionSize(); i < Inventory.INVENTORY_SIZE; i++) {
             if (!LockManager.isLocked(locks, i)) {
                 indices.add(i);
             }
         }
-        for (int i = 0; i < Inventory.SELECTION_SIZE; i++) {
+        for (int i = 0; i < Inventory.getSelectionSize(); i++) {
             if (!LockManager.isLocked(locks, i)) {
                 indices.add(i);
             }

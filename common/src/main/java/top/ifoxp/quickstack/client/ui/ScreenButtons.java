@@ -159,7 +159,7 @@ public final class ScreenButtons {
 
     private static boolean showsMainInventory(AbstractContainerMenu menu) {
         for (Slot slot : menu.slots) {
-            if (slot.container instanceof Inventory && slot.getContainerSlot() >= Inventory.SELECTION_SIZE
+            if (slot.container instanceof Inventory && slot.getContainerSlot() >= Inventory.getSelectionSize()
                     && slot.getContainerSlot() < Inventory.INVENTORY_SIZE) {
                 return true;
             }

@@ -108,8 +108,8 @@ public final class Transfer {
             }
         }
         for (int pass = 0; pass < 2 && !stack.isEmpty(); pass++) {
-            int from = pass == 0 ? Inventory.SELECTION_SIZE : 0;
-            int to = pass == 0 ? items.size() : Inventory.SELECTION_SIZE;
+            int from = pass == 0 ? Inventory.getSelectionSize() : 0;
+            int to = pass == 0 ? items.size() : Inventory.getSelectionSize();
             for (int i = from; i < to && !stack.isEmpty(); i++) {
                 if (items.get(i).isEmpty()) {
                     int moved = Math.min(stack.getCount(), Math.min(stack.getMaxStackSize(), inventory.getMaxStackSize(stack)));

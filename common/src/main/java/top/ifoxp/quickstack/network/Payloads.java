@@ -18,6 +18,9 @@ public final class Payloads {
 
     /** An item by registry id ({@code Item.STREAM_CODEC} from 1.21.5). */
     private static final StreamCodec<RegistryFriendlyByteBuf, Holder<Item>> ITEM_CODEC = ByteBufCodecs.holderRegistry(Registries.ITEM);
+    /** Three doubles ({@code Vec3.STREAM_CODEC} from 1.21.2). */
+    private static final StreamCodec<RegistryFriendlyByteBuf, Vec3> VEC3_CODEC = StreamCodec.composite(
+            ByteBufCodecs.DOUBLE, Vec3::x, ByteBufCodecs.DOUBLE, Vec3::y, ByteBufCodecs.DOUBLE, Vec3::z, Vec3::new);
 
     private Payloads() {
     }
@@ -146,7 +149,7 @@ public final class Payloads {
     public record Flight(ItemStack stack, Vec3 target, int launchTick, int arriveTick) {
         public static final StreamCodec<RegistryFriendlyByteBuf, Flight> CODEC = StreamCodec.composite(
                 ItemStack.STREAM_CODEC, Flight::stack,
-                Vec3.STREAM_CODEC, Flight::target,
+                VEC3_CODEC, Flight::target,
                 ByteBufCodecs.VAR_INT, Flight::launchTick,
                 ByteBufCodecs.VAR_INT, Flight::arriveTick,
                 Flight::new);
