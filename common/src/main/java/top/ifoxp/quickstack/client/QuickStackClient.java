@@ -100,6 +100,9 @@ public final class QuickStackClient {
     // ---- ticks ----
 
     public static void tick(Minecraft minecraft) {
+        if (SelfCheck.enabled()) {
+            SelfCheck.tick(minecraft);
+        }
         if (minecraft.player == null || minecraft.level == null) {
             FlightAnimator.clear();
             Highlighter.clear();

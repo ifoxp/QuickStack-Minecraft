@@ -46,6 +46,10 @@ loom {
     runs {
         client {
             client()
+            // ./gradlew :fabric:runClient -Pselfcheck loads every mixin target and quits (see SelfCheck)
+            if (project.hasProperty('selfcheck')) {
+                vmArg '-Dquickstack.selfcheck=true'
+            }
             setConfigName('Fabric Client')
             ideConfigGenerated(true)
             runDir('runs/client')
