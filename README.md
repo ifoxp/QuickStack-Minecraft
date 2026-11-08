@@ -12,6 +12,10 @@ Terraria-style inventory management for Minecraft Java Edition (Fabric and NeoFo
 - **Sorting** of the inventory and containers (button, middle click or a key), by category, name or count.
 - **Crafting from nearby containers**: the recipe book counts items in containers around you and takes missing
   ingredients from them.
+- **Shift sweep**: hold Shift and the left button and move over slots; each one is shift-clicked (or Shift alone,
+  in the settings). Locked slots are skipped.
+- **Mouse wheel, one item at a time**: wheel up over a stack takes one more onto the cursor, wheel down puts one
+  from the cursor into the slot (like right clicks).
 - **Find an item** in nearby containers: the containers holding it sparkle.
 - **Undo** the last quick stack (key, unbound by default).
 - English and Ukrainian.

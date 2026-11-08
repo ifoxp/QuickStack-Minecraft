@@ -26,6 +26,10 @@ public final class ClientConfig {
     public boolean highlightTargets = true;
     /** The recipe book counts items in nearby containers. */
     public boolean craftFromNearby = true;
+    /** Moving over slots with Shift (and the left button) shift-clicks each of them. */
+    public ShiftDrag shiftDrag = ShiftDrag.WITH_MOUSE;
+    /** The mouse wheel over a stack chooses how many to pick up; left click takes them. */
+    public boolean scrollPickAmount = true;
 
     public static ClientConfig get() {
         return instance;
@@ -49,6 +53,21 @@ public final class ClientConfig {
         }
         if (buttonPlacement == null) {
             buttonPlacement = ButtonPlacement.TAB;
+        }
+        if (shiftDrag == null) {
+            shiftDrag = ShiftDrag.WITH_MOUSE;
+        }
+    }
+
+    public enum ShiftDrag {
+        /** Shift + left button held, then move: the safe default (a plain Shift+click path never sweeps slots). */
+        WITH_MOUSE,
+        /** Shift alone: every slot the cursor passes over moves. */
+        SHIFT_ONLY,
+        OFF;
+
+        public String translationKey() {
+            return "quickstack.shift_drag." + name().toLowerCase(java.util.Locale.ROOT);
         }
     }
 

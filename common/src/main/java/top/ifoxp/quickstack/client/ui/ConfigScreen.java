@@ -68,11 +68,20 @@ public class ConfigScreen extends Screen {
                         (button, value) -> client.sortMode = value));
         add(left, top, row++, toggle("quickstack.config.craft_nearby_client", client.craftFromNearby,
                 value -> client.craftFromNearby = value));
+        add(left, top, row++, CycleButton.<ClientConfig.ShiftDrag>builder(
+                        mode -> Component.translatable(mode.translationKey()), client.shiftDrag)
+                .withValues(ClientConfig.ShiftDrag.values())
+                .create(0, 0, WIDTH, HEIGHT, Component.translatable("quickstack.config.shift_drag"),
+                        (button, value) -> client.shiftDrag = value));
+        add(left, top, row++, toggle("quickstack.config.scroll_pick", client.scrollPickAmount,
+                value -> client.scrollPickAmount = value));
         if (minecraft.player != null) {
-            add(left, top, row++, Button.builder(Component.translatable("quickstack.config.reset_locks"),
-                    button -> QuickStackClient.toggleLock(Payloads.ToggleLock.RESET_DEFAULT)).size(WIDTH, HEIGHT).build());
-            add(left, top, row++, Button.builder(Component.translatable("quickstack.config.unlock_all"),
-                    button -> QuickStackClient.toggleLock(Payloads.ToggleLock.UNLOCK_ALL)).size(WIDTH, HEIGHT).build());
+            int half = (WIDTH - 4) / 2;
+            int y = top + row++ * ROW;
+            addRenderableWidget(Button.builder(Component.translatable("quickstack.config.reset_locks"),
+                    button -> QuickStackClient.toggleLock(Payloads.ToggleLock.RESET_DEFAULT)).bounds(left, y, half, HEIGHT).build());
+            addRenderableWidget(Button.builder(Component.translatable("quickstack.config.unlock_all"),
+                    button -> QuickStackClient.toggleLock(Payloads.ToggleLock.UNLOCK_ALL)).bounds(left + WIDTH - half, y, half, HEIGHT).build());
         }
 
         if (editServer) {

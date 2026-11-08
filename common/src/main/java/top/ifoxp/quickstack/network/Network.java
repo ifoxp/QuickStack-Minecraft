@@ -49,7 +49,8 @@ public final class Network {
             new ServerBound<>(Payloads.Undo.TYPE, Payloads.Undo.CODEC,
                     (payload, player) -> QuickStackManager.undo(player)),
             new ServerBound<>(Payloads.RequestStorage.TYPE, Payloads.RequestStorage.CODEC,
-                    (payload, player) -> ItemFinder.sendSummary(player)));
+                    (payload, player) -> ItemFinder.sendSummary(player)),
+            new ServerBound<>(Payloads.TakeFromSlot.TYPE, Payloads.TakeFromSlot.CODEC, MenuActions::takeFromSlot));
 
     public static final List<ClientBound<?>> CLIENT_BOUND = List.of(
             new ClientBound<>(Payloads.Flights.TYPE, Payloads.Flights.CODEC),

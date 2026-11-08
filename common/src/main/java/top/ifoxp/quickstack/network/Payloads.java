@@ -107,6 +107,21 @@ public final class Payloads {
         }
     }
 
+    /** Move {@code amount} items from a slot of the open menu onto the cursor (mouse wheel up, one per notch). */
+    public record TakeFromSlot(int containerId, int slot, int amount) implements CustomPacketPayload {
+        public static final Type<TakeFromSlot> TYPE = typeOf("take_from_slot");
+        public static final StreamCodec<RegistryFriendlyByteBuf, TakeFromSlot> CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, TakeFromSlot::containerId,
+                ByteBufCodecs.VAR_INT, TakeFromSlot::slot,
+                ByteBufCodecs.VAR_INT, TakeFromSlot::amount,
+                TakeFromSlot::new);
+
+        @Override
+        public Type<TakeFromSlot> type() {
+            return TYPE;
+        }
+    }
+
     /** Undo the last quick stack to nearby containers. */
     public record Undo() implements CustomPacketPayload {
         public static final Type<Undo> TYPE = typeOf("undo");

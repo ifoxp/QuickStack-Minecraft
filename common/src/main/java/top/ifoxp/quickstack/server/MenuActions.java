@@ -60,6 +60,39 @@ public final class MenuActions {
     }
 
     /**
+     * Mouse wheel up over a slot: moves items from the slot onto the cursor, which is empty or already holds the same
+     * item. The opposite (one item from the cursor into a slot) is a vanilla right click, sent by the client.
+     */
+    public static void takeFromSlot(Payloads.TakeFromSlot request, ServerPlayer player) {
+        AbstractContainerMenu menu = player.containerMenu;
+        if (player.isSpectator() || menu.containerId != request.containerId() || !menu.stillValid(player)
+                || request.amount() <= 0 || !menu.isValidSlotIndex(request.slot())) {
+            return;
+        }
+        Slot slot = menu.getSlot(request.slot());
+        ItemStack carried = menu.getCarried();
+        if (!slot.hasItem() || !slot.mayPickup(player)
+                || (!carried.isEmpty() && !ItemStack.isSameItemSameComponents(carried, slot.getItem()))) {
+            return;
+        }
+        int room = carried.isEmpty() ? slot.getItem().getMaxStackSize() : carried.getMaxStackSize() - carried.getCount();
+        int amount = Math.min(request.amount(), room);
+        if (amount <= 0) {
+            return;
+        }
+        ItemStack taken = slot.safeTake(amount, amount, player);
+        if (taken.isEmpty()) {
+            return;
+        }
+        if (carried.isEmpty()) {
+            menu.setCarried(taken);
+        } else {
+            carried.grow(taken.getCount());
+        }
+        menu.broadcastChanges();
+    }
+
+    /**
      * The container side of a storage menu, or an empty list when the menu is not plain storage (furnaces,
      * machines, crafting...). Vanilla chests, barrels, ender chests and shulker boxes qualify; a modded menu does
      * when all its other slots are plain slots of one large block entity container.

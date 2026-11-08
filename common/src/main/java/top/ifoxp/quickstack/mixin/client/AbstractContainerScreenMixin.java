@@ -1,7 +1,9 @@
 package top.ifoxp.quickstack.mixin.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
@@ -11,27 +13,34 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import top.ifoxp.quickstack.client.ClientState;
 import top.ifoxp.quickstack.client.QuickStackClient;
 import top.ifoxp.quickstack.client.ui.ContainerScreenAccess;
 import top.ifoxp.quickstack.client.ui.FindItemScreen;
 import top.ifoxp.quickstack.client.ui.ScreenButtons;
 import top.ifoxp.quickstack.config.ClientConfig;
 import top.ifoxp.quickstack.network.MenuAction;
+import top.ifoxp.quickstack.network.Payloads;
+import top.ifoxp.quickstack.platform.Services;
 
 /**
- * Buttons on every container screen, lock marks on locked slots, Alt+click to lock, middle click to sort, and the
- * mod's keys while a container screen is open.
+ * Buttons on every container screen, lock marks on locked slots, Alt+click to lock, middle click to sort, Shift
+ * sweeping, one-item moves with the mouse wheel, and the mod's keys while a container screen is open.
  */
 @Mixin(AbstractContainerScreen.class)
 public abstract class AbstractContainerScreenMixin extends Screen implements ContainerScreenAccess {
@@ -44,6 +53,17 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
     @Shadow protected int inventoryLabelY;
     @Shadow protected @Nullable Slot hoveredSlot;
     @Shadow @Final protected AbstractContainerMenu menu;
+
+    @Shadow protected abstract void slotClicked(Slot slot, int slotId, int buttonNum, ContainerInput containerInput);
+
+    @Shadow
+    private @Nullable Slot getHoveredSlot(double x, double y) {
+        throw new AssertionError();
+    }
+
+    @Unique private final Set<Slot> quickstack$swept = new HashSet<>();
+    @Unique private final Set<Slot> quickstack$hoverSwept = new HashSet<>();
+    @Unique private boolean quickstack$sweeping;
 
     protected AbstractContainerScreenMixin(Component title) {
         super(title);
@@ -65,6 +85,105 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
     @Inject(method = "extractSlot", at = @At("RETURN"))
     private void quickstack$drawLock(GuiGraphicsExtractor graphics, Slot slot, int mouseX, int mouseY, CallbackInfo ci) {
         ScreenButtons.drawSlotOverlay(graphics, slot);
+    }
+
+    // ---- Shift sweep: shift-click every slot the cursor passes over ----
+
+    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+    private void quickstack$startSweep(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
+        quickstack$swept.clear();
+        quickstack$sweeping = event.button() == InputConstants.MOUSE_BUTTON_LEFT
+                && ClientConfig.get().shiftDrag == ClientConfig.ShiftDrag.WITH_MOUSE
+                && (event.hasShiftDown() || minecraft.hasShiftDown())
+                && menu.getCarried().isEmpty()
+                && !((Object) this instanceof CreativeModeInventoryScreen);
+        if (!quickstack$sweeping || hoveredSlot == null) {
+            return;
+        }
+        if (event.hasShiftDown()) {
+            quickstack$swept.add(hoveredSlot); // vanilla shift-clicks this first one itself
+        } else {
+            // Shift is held but the event did not carry the modifier: do the shift-click here, or vanilla would
+            // pick the stack up instead.
+            quickstack$sweepSlot(hoveredSlot);
+            cir.setReturnValue(true);
+        }
+    }
+
+    @Inject(method = "mouseDragged", at = @At("HEAD"), cancellable = true)
+    private void quickstack$sweep(MouseButtonEvent event, double dx, double dy, CallbackInfoReturnable<Boolean> cir) {
+        if (!quickstack$sweeping || !minecraft.hasShiftDown()) {
+            return;
+        }
+        Slot slot = getHoveredSlot(event.x(), event.y());
+        if (slot != null) {
+            quickstack$sweepSlot(slot);
+        }
+        cir.setReturnValue(true);
+    }
+
+    @Inject(method = "mouseReleased", at = @At("HEAD"))
+    private void quickstack$endSweep(MouseButtonEvent event, CallbackInfoReturnable<Boolean> cir) {
+        quickstack$sweeping = false;
+    }
+
+    /** The "Shift only" mode: no button needed, checked every frame. */
+    @Inject(method = "extractContents", at = @At("TAIL"))
+    private void quickstack$hoverSweep(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
+        if (ClientConfig.get().shiftDrag != ClientConfig.ShiftDrag.SHIFT_ONLY
+                || (Object) this instanceof CreativeModeInventoryScreen || !minecraft.hasShiftDown()) {
+            quickstack$hoverSwept.clear();
+            return;
+        }
+        if (hoveredSlot != null && quickstack$hoverSwept.add(hoveredSlot)) {
+            quickstack$sweepSlot(hoveredSlot);
+        }
+    }
+
+    private void quickstack$sweepSlot(Slot slot) {
+        boolean locked = ScreenButtons.isLockableSlot(slot) && ClientState.isLocked(slot.getContainerSlot());
+        if (slot.hasItem() && !locked && menu.getCarried().isEmpty() && quickstack$swept.add(slot)) {
+            slotClicked(slot, slot.index, 0, ContainerInput.QUICK_MOVE);
+        }
+    }
+
+    // ---- Mouse wheel: one item at a time, like right clicks ----
+
+    @Inject(method = "mouseScrolled", at = @At("HEAD"), cancellable = true)
+    private void quickstack$wheel(double x, double y, double scrollX, double scrollY, CallbackInfoReturnable<Boolean> cir) {
+        Slot slot = hoveredSlot;
+        if (!ClientConfig.get().scrollPickAmount || slot == null || scrollY == 0 || minecraft.player == null
+                || (Object) this instanceof CreativeModeInventoryScreen) {
+            return;
+        }
+        // Bundles use the wheel to choose their item.
+        if (slot.getItem().has(DataComponents.BUNDLE_CONTENTS) || menu.getCarried().has(DataComponents.BUNDLE_CONTENTS)) {
+            return;
+        }
+        ItemStack carried = menu.getCarried();
+        ItemStack inSlot = slot.getItem();
+        if (scrollY > 0) {
+            // Up: one more item from the slot onto the cursor.
+            boolean fits = carried.isEmpty() || (ItemStack.isSameItemSameComponents(carried, inSlot) && carried.getCount() < carried.getMaxStackSize());
+            if (inSlot.isEmpty() || !fits || !QuickStackClient.serverHasMod()) {
+                return;
+            }
+            Services.client().sendToServer(new Payloads.TakeFromSlot(menu.containerId, slot.index, 1));
+            if (carried.isEmpty()) {
+                menu.setCarried(inSlot.copyWithCount(1)); // predicted; the server's sync confirms it
+            } else {
+                carried.grow(1);
+            }
+            inSlot.shrink(1);
+        } else {
+            // Down: one item from the cursor into the slot, exactly a vanilla right click.
+            boolean fits = inSlot.isEmpty() || ItemStack.isSameItemSameComponents(carried, inSlot);
+            if (carried.isEmpty() || !fits || !slot.mayPlace(carried)) {
+                return;
+            }
+            slotClicked(slot, slot.index, 1, ContainerInput.PICKUP);
+        }
+        cir.setReturnValue(true);
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)

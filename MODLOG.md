@@ -55,3 +55,8 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
   into two chests). Planning indexes only the item kinds the player can stack. Stress test: radius 16, 2352 chests
   holding 61 152 full stacks, full inventory: scan 5 ms, plan 16 ms cold / 7 ms warm, search summary 17 ms, worst tick
   while landing 4.8 ms. Gametest 40/40.
+- 2026-11-08: round 3. Shift sweep (default Shift + left button; option Shift only / off) via mouseDragged and
+  slotClicked(QUICK_MOVE); when Shift is held but the mouse event lacks the modifier, the first slot is moved by the
+  mod. Mouse wheel: up = TakeFromSlot payload (one item onto the cursor, predicted on the client), down = vanilla
+  right click (PICKUP button 1). Container click buttons stay 0/1 in the protocol even though SDL mouse buttons are 1/3.
+  Gametest 43/43.

@@ -268,6 +268,85 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         boolean included = !world.getServer().computeOnServer(s -> Services.PLATFORM.isExcluded(player(s).level().getBlockEntity(chest)));
         check("second click includes it again", included, "");
 
+        // Shift + left button held, moved over three inventory slots: all three go into the chest.
+        world.getServer().runOnServer(server -> {
+            Inventory inventory = player(server).getInventory();
+            inventory.setItem(18, new ItemStack(Items.SAND, 5));
+            inventory.setItem(19, new ItemStack(Items.GRAVEL, 5));
+            inventory.setItem(20, new ItemStack(Items.CLAY_BALL, 5));
+        });
+        context.waitTicks(3);
+        double scale = context.computeOnClient(mc -> (double) mc.getWindow().getScreenWidth() / mc.getWindow().getGuiScaledWidth());
+        double[] s18 = slotCenter(context, 18);
+        double[] s19 = slotCenter(context, 19);
+        double[] s20 = slotCenter(context, 20);
+        context.getInput().holdShift();
+        context.getInput().setCursorPos(s18[0] * scale, s18[1] * scale);
+        context.waitTick();
+        context.getInput().holdMouse(InputConstants.MOUSE_BUTTON_LEFT);
+        context.waitTick();
+        context.getInput().setCursorPos(s19[0] * scale, s19[1] * scale);
+        context.waitTick();
+        context.getInput().setCursorPos(s20[0] * scale, s20[1] * scale);
+        context.waitTick();
+        context.getInput().releaseMouse(InputConstants.MOUSE_BUTTON_LEFT);
+        context.getInput().releaseShift();
+        world.getConnection().waitForServerboundPackets();
+        context.waitTicks(3);
+        world.getServer().runOnServer(server -> {
+            Container container = container(player(server).level(), chest);
+            boolean all = count(container, Items.SAND) == 5 && count(container, Items.GRAVEL) == 5 && count(container, Items.CLAY_BALL) == 5;
+            check("shift sweep moved all three slots into the chest", all,
+                    "sand " + count(container, Items.SAND) + ", gravel " + count(container, Items.GRAVEL) + ", clay " + count(container, Items.CLAY_BALL));
+            for (Item item : List.of(Items.SAND, Items.GRAVEL, Items.CLAY_BALL)) {
+                for (int i = 0; i < container.getContainerSize(); i++) {
+                    if (container.getItem(i).is(item)) {
+                        container.setItem(i, ItemStack.EMPTY);
+                    }
+                }
+            }
+        });
+        context.waitTicks(2);
+
+        // Mouse wheel: up takes one item at a time onto the cursor, down puts one back.
+        int cobbleSlot = world.getServer().computeOnServer(s -> {
+            Container container = container(player(s).level(), chest);
+            for (int i = 0; i < container.getContainerSize(); i++) {
+                if (container.getItem(i).is(Items.COBBLESTONE)) {
+                    return i;
+                }
+            }
+            return -1;
+        });
+        double[] cobble = context.computeOnClient(mc -> {
+            AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) mc.gui.screen();
+            ContainerScreenAccess layout = (ContainerScreenAccess) screen;
+            Slot slot = screen.getMenu().slots.get(cobbleSlot);
+            return new double[] {layout.quickstack$leftPos() + slot.x + 8, layout.quickstack$topPos() + slot.y + 8};
+        });
+        context.getInput().setCursorPos(cobble[0] * scale, cobble[1] * scale);
+        context.waitTicks(2);
+        for (int i = 0; i < 3; i++) {
+            context.getInput().scroll(1);
+            context.waitTick();
+        }
+        world.getConnection().waitForServerboundPackets();
+        context.waitTicks(2);
+        int carriedUp = world.getServer().computeOnServer(s -> player(s).containerMenu.getCarried().getCount());
+        check("three wheel notches up put 3 items on the cursor", carriedUp == 3, "cursor has " + carriedUp);
+        for (int i = 0; i < 3; i++) {
+            context.getInput().scroll(-1);
+            context.waitTick();
+        }
+        world.getConnection().waitForServerboundPackets();
+        context.waitTicks(2);
+        world.getServer().runOnServer(server -> {
+            ServerPlayer player = player(server);
+            check("three notches down put them back one by one", player.containerMenu.getCarried().isEmpty()
+                    && count(container(player.level(), chest), Items.COBBLESTONE) == 130,
+                    "cursor " + player.containerMenu.getCarried() + ", chest " + count(container(player.level(), chest), Items.COBBLESTONE));
+        });
+
         context.runOnClient(mc -> mc.player.closeContainer());
         context.waitTicks(2);
     }

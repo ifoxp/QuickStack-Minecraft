@@ -39,8 +39,8 @@
   "quickstack.config.middle_click_sort": "Сортувати середньою кнопкою",
   "quickstack.config.sort_mode": "Сортувати за",
   "quickstack.config.craft_nearby_client": "Крафт зі скринь поруч",
-  "quickstack.config.reset_locks": "Скинути фіксацію (хотбар)",
-  "quickstack.config.unlock_all": "Розфіксувати всі слоти",
+  "quickstack.config.reset_locks": "Скинути фіксацію",
+  "quickstack.config.unlock_all": "Розфіксувати все",
   "quickstack.config.radius": "Радіус складання",
   "quickstack.config.craft_radius": "Радіус крафту",
   "quickstack.config.search_radius": "Радіус пошуку",
@@ -59,5 +59,10 @@
   "quickstack.find.click": "Клік — підсвітити скрині",
   "quickstack.config.button_placement": "Розташування кнопок",
   "quickstack.button_placement.tab": "Вкладка зверху",
-  "quickstack.button_placement.inside": "Усередині"
+  "quickstack.button_placement.inside": "Усередині",
+  "quickstack.config.shift_drag": "Shift-протягування",
+  "quickstack.shift_drag.with_mouse": "Shift + ліва кнопка",
+  "quickstack.shift_drag.shift_only": "Лише Shift",
+  "quickstack.shift_drag.off": "Вимкнено",
+  "quickstack.config.scroll_pick": "Колесико: по одному"
 }
