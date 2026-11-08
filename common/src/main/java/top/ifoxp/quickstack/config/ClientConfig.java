@@ -16,6 +16,8 @@ public final class ClientConfig {
     /** Show the flying items; without it items go straight into the containers. */
     public boolean animation = true;
     public boolean showInventoryButtons = true;
+    /** Where the inventory buttons go: a small tab above the window, or inside it. */
+    public ButtonPlacement buttonPlacement = ButtonPlacement.TAB;
     public boolean showContainerButtons = true;
     /** Middle click on a container or the inventory sorts it. */
     public boolean middleClickSort = true;
@@ -44,6 +46,20 @@ public final class ClientConfig {
         keepInChest = Math.clamp(keepInChest, 0, 64);
         if (sortMode == null) {
             sortMode = SortMode.CATEGORY;
+        }
+        if (buttonPlacement == null) {
+            buttonPlacement = ButtonPlacement.TAB;
+        }
+    }
+
+    public enum ButtonPlacement {
+        /** A tab sticking out of the top edge of the window, off the inventory area. */
+        TAB,
+        /** Inside the window: under the crafting grid, or on the "Inventory" label row. */
+        INSIDE;
+
+        public String translationKey() {
+            return "quickstack.button_placement." + name().toLowerCase(java.util.Locale.ROOT);
         }
     }
 }

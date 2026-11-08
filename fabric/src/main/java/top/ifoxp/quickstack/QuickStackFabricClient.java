@@ -24,6 +24,7 @@ public class QuickStackFabricClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(Payloads.LockSync.TYPE, (payload, context) -> QuickStackClient.onLockSync(payload));
         ClientPlayNetworking.registerGlobalReceiver(Payloads.NearbyItems.TYPE, (payload, context) -> QuickStackClient.onNearbyItems(payload));
         ClientPlayNetworking.registerGlobalReceiver(Payloads.Highlight.TYPE, (payload, context) -> QuickStackClient.onHighlight(payload));
+        ClientPlayNetworking.registerGlobalReceiver(Payloads.StorageSummary.TYPE, (payload, context) -> QuickStackClient.onStorageSummary(payload));
 
         ClientTickEvents.END_CLIENT_TICK.register(QuickStackClient::tick);
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> QuickStackClient.onDisconnect());

@@ -47,13 +47,16 @@ public final class Network {
             new ServerBound<>(Payloads.FindItems.TYPE, Payloads.FindItems.CODEC,
                     (payload, player) -> ItemFinder.find(player, payload.items())),
             new ServerBound<>(Payloads.Undo.TYPE, Payloads.Undo.CODEC,
-                    (payload, player) -> QuickStackManager.undo(player)));
+                    (payload, player) -> QuickStackManager.undo(player)),
+            new ServerBound<>(Payloads.RequestStorage.TYPE, Payloads.RequestStorage.CODEC,
+                    (payload, player) -> ItemFinder.sendSummary(player)));
 
     public static final List<ClientBound<?>> CLIENT_BOUND = List.of(
             new ClientBound<>(Payloads.Flights.TYPE, Payloads.Flights.CODEC),
             new ClientBound<>(Payloads.LockSync.TYPE, Payloads.LockSync.CODEC),
             new ClientBound<>(Payloads.NearbyItems.TYPE, Payloads.NearbyItems.CODEC),
-            new ClientBound<>(Payloads.Highlight.TYPE, Payloads.Highlight.CODEC));
+            new ClientBound<>(Payloads.Highlight.TYPE, Payloads.Highlight.CODEC),
+            new ClientBound<>(Payloads.StorageSummary.TYPE, Payloads.StorageSummary.CODEC));
 
     private Network() {
     }

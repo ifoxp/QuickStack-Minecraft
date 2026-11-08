@@ -4,6 +4,7 @@
   "package": "top.ifoxp.quickstack.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "AbstractContainerMenuMixin",
     "CompoundContainerAccessor",
     "ServerPlaceRecipeMixin"
   ],

@@ -40,7 +40,19 @@ public final class ClientState {
         nearbyVersion++;
     }
 
+    private static Payloads.StorageSummary storage;
+
+    /** What the containers around the player hold, or null until the server answered. */
+    public static Payloads.StorageSummary storage() {
+        return storage;
+    }
+
+    public static void setStorage(Payloads.StorageSummary summary) {
+        storage = summary;
+    }
+
     public static void reset() {
+        storage = null;
         lockMask = LockManager.DEFAULT_MASK;
         nearbyItems = List.of();
         nearbyVersion++;

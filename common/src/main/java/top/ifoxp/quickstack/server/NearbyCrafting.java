@@ -1,13 +1,17 @@
 package top.ifoxp.quickstack.server;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -43,6 +47,7 @@ public final class NearbyCrafting {
 
     public static void forget(UUID playerId) {
         OPTED_OUT.remove(playerId);
+        LOANS.remove(playerId);
     }
 
     /** True while the player crafts in a crafting grid and both the server and the player allow it. */
@@ -116,6 +121,7 @@ public final class NearbyCrafting {
                 ItemStack part = container.removeItem(i, Math.min(count, inside.getCount()));
                 count -= part.getCount();
                 changed = true;
+                lend((ServerPlayer) player, target, part);
                 if (taken.isEmpty()) {
                     taken = part;
                 } else {
@@ -130,5 +136,71 @@ public final class NearbyCrafting {
             }
         }
         return taken;
+    }
+
+    // ---- loans: ingredients taken from containers go back there when the grid is cleared or closed ----
+
+    /** {@code count} items like {@code kind} were taken from the container at {@code pos} into a crafting grid. */
+    private static final class Loan {
+        final ServerLevel level;
+        final BlockPos pos;
+        final ItemStack kind;
+        int count;
+
+        Loan(ServerLevel level, BlockPos pos, ItemStack kind, int count) {
+            this.level = level;
+            this.pos = pos;
+            this.kind = kind;
+            this.count = count;
+        }
+    }
+
+    private static final Map<UUID, List<Loan>> LOANS = new HashMap<>();
+
+    private static void lend(ServerPlayer player, ContainerTarget target, ItemStack part) {
+        List<Loan> loans = LOANS.computeIfAbsent(player.getUUID(), id -> new ArrayList<>());
+        for (Loan loan : loans) {
+            if (loan.pos.equals(target.pos()) && loan.level == player.level() && ItemStack.isSameItemSameComponents(loan.kind, part)) {
+                loan.count += part.getCount();
+                return;
+            }
+        }
+        loans.add(new Loan(player.level(), target.pos(), part.copyWithCount(1), part.getCount()));
+    }
+
+    public static boolean hasLoans(ServerPlayer player) {
+        List<Loan> loans = LOANS.get(player.getUUID());
+        return loans != null && !loans.isEmpty();
+    }
+
+    /**
+     * Puts as much of {@code stack} as was borrowed back into the containers it came from; {@code stack} shrinks by
+     * what went back. The player's own items are counted as used first, so leftovers return to the containers.
+     */
+    public static void returnLoans(ServerPlayer player, ItemStack stack) {
+        List<Loan> loans = LOANS.get(player.getUUID());
+        if (loans == null || stack.isEmpty()) {
+            return;
+        }
+        for (Iterator<Loan> it = loans.iterator(); it.hasNext() && !stack.isEmpty(); ) {
+            Loan loan = it.next();
+            if (!ItemStack.isSameItemSameComponents(loan.kind, stack)) {
+                continue;
+            }
+            ContainerTarget target = ContainerScanner.resolve(loan.level, loan.pos);
+            if (target != null) {
+                ItemStack back = stack.copyWithCount(Math.min(loan.count, stack.getCount()));
+                int moved = Transfer.insert(target.container(), back, null);
+                stack.shrink(moved);
+                loan.count -= moved;
+            }
+            if (loan.count <= 0 || target == null) {
+                it.remove();
+            }
+        }
+    }
+
+    public static void clearLoans(UUID playerId) {
+        LOANS.remove(playerId);
     }
 }

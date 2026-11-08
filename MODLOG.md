@@ -43,3 +43,10 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
 
 ## Log
 - 2026-11-08: template → QuickStack, all features written, both loaders compile. First client gametest run.
+- 2026-11-08: user feedback round 1. Lock marks made subtle (small faded padlock). Crafting from nearby now keeps
+  a per-player loan ledger: borrowed ingredients go back to their containers when the grid is cleared
+  (ServerPlaceRecipe.clearGrid) or the menu closes (AbstractContainerMenu.clearContainer), player's own items count
+  as used first. Search is a grid screen of everything in containers within searchRadius (RequestStorage /
+  StorageSummary), matches not stored shown faded; search results get a rising END_ROD column. Inventory buttons
+  moved to a tab above the window (ClientConfig.buttonPlacement TAB/INSIDE). Mouse buttons in 26.x are SDL
+  numbers (left = 1, middle = 2): fixed. Gametest: 36/36.

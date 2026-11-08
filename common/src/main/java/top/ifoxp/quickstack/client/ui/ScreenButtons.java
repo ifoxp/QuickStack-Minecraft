@@ -3,10 +3,12 @@ package top.ifoxp.quickstack.client.ui;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.IntSupplier;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -27,6 +29,8 @@ import top.ifoxp.quickstack.network.MenuAction;
 public final class ScreenButtons {
 
     private static final int STEP = IconButton.SIZE + 1;
+    /** Height of the button tab above the window, including the 3 px that overlap its border. */
+    private static final int TAB_HEIGHT = 15;
     private static final int LOCK_MARK_COLOR = 0xA0FFFFFF;
 
     private ScreenButtons() {
@@ -35,7 +39,7 @@ public final class ScreenButtons {
     private record Spec(IconButton.Icon icon, MutableComponent tooltip, Runnable action) {
     }
 
-    public static void addButtons(AbstractContainerScreen<?> screen, Consumer<AbstractWidget> add) {
+    public static void addButtons(AbstractContainerScreen<?> screen, Consumer<AbstractWidget> add, Consumer<Renderable> addRenderable) {
         if (screen instanceof CreativeModeInventoryScreen || !QuickStackClient.serverHasMod()) {
             return;
         }
@@ -46,25 +50,27 @@ public final class ScreenButtons {
         ContainerScreenAccess layout = (ContainerScreenAccess) screen;
         ClientConfig config = ClientConfig.get();
 
-        if (screen instanceof InventoryScreen) {
-            if (!config.showInventoryButtons) {
-                return;
-            }
-            // The free corner right of the recipe book button, under the crafting grid.
-            List<Spec> specs = inventorySpecs(true);
-            for (int i = 0; i < specs.size(); i++) {
-                int index = i;
-                Spec spec = specs.get(i);
-                add.accept(new IconButton(
-                        () -> layout.quickstack$leftPos() + 127 + index * STEP,
-                        () -> layout.quickstack$topPos() + 64,
-                        spec.icon, spec.tooltip, spec.action));
-            }
-            return;
-        }
-
         if (config.showInventoryButtons) {
-            addRightAligned(add, layout, inventorySpecs(false), () -> layout.quickstack$inventoryLabelY() - 1);
+            boolean tabFits = layout.quickstack$topPos() >= TAB_HEIGHT;
+            if (config.buttonPlacement == ClientConfig.ButtonPlacement.TAB && tabFits) {
+                addTab(add, addRenderable, layout, inventorySpecs(true));
+            } else if (screen instanceof InventoryScreen) {
+                // The free corner right of the recipe book button, under the crafting grid.
+                List<Spec> specs = inventorySpecs(true);
+                for (int i = 0; i < specs.size(); i++) {
+                    int index = i;
+                    Spec spec = specs.get(i);
+                    add.accept(new IconButton(
+                            () -> layout.quickstack$leftPos() + 127 + index * STEP,
+                            () -> layout.quickstack$topPos() + 64,
+                            spec.icon, spec.tooltip, spec.action));
+                }
+            } else {
+                addRightAligned(add, layout, inventorySpecs(false), () -> layout.quickstack$inventoryLabelY() - 1);
+            }
+        }
+        if (screen instanceof InventoryScreen) {
+            return;
         }
         if (config.showContainerButtons && isStorageMenu(menu)) {
             List<Spec> specs = List.of(
@@ -109,8 +115,35 @@ public final class ScreenButtons {
         return text.append(Component.literal(" (")).append(key.getTranslatedKeyMessage()).append(Component.literal(")"));
     }
 
+    /**
+     * A small tab sticking out of the top edge of the window, right-aligned, holding the buttons. It stays off the
+     * inventory area, the recipe book (left) and item list mods (right).
+     */
+    private static void addTab(Consumer<AbstractWidget> add, Consumer<Renderable> addRenderable, ContainerScreenAccess layout,
+            List<Spec> specs) {
+        int tabWidth = specs.size() * STEP + 3;
+        IntSupplier tabX = () -> layout.quickstack$leftPos() + layout.quickstack$imageWidth() - 4 - tabWidth;
+        IntSupplier tabY = () -> layout.quickstack$topPos() - TAB_HEIGHT + 3;
+        addRenderable.accept((graphics, mouseX, mouseY, a) -> drawTab(graphics, tabX.getAsInt(), tabY.getAsInt(), tabWidth));
+        for (int i = 0; i < specs.size(); i++) {
+            int offset = 2 + i * STEP;
+            Spec spec = specs.get(i);
+            add.accept(new IconButton(() -> tabX.getAsInt() + offset, () -> tabY.getAsInt() + 2, spec.icon, spec.tooltip, spec.action));
+        }
+    }
+
+    /** Vanilla panel colours; the bottom runs 3 px into the window so it merges with its top border. */
+    private static void drawTab(GuiGraphicsExtractor graphics, int x, int y, int w) {
+        int bottom = y + TAB_HEIGHT;
+        graphics.fill(x, y, x + w, bottom, 0xFF000000);
+        graphics.fill(x + 1, y + 1, x + w - 1, bottom, 0xFFC6C6C6);
+        graphics.fill(x + 1, y + 1, x + w - 2, y + 2, 0xFFFFFFFF);
+        graphics.fill(x + 1, y + 1, x + 2, bottom - 2, 0xFFFFFFFF);
+        graphics.fill(x + w - 2, y + 2, x + w - 1, bottom - 2, 0xFF555555);
+    }
+
     private static void addRightAligned(Consumer<AbstractWidget> add, ContainerScreenAccess layout, List<Spec> specs,
-            java.util.function.IntSupplier relativeY) {
+            IntSupplier relativeY) {
         int count = specs.size();
         for (int i = 0; i < count; i++) {
             int fromRight = count - i;

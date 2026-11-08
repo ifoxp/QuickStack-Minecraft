@@ -5,7 +5,6 @@
   "key.quickstack.undo": "Undo last quick stack",
   "key.quickstack.find": "Find item in nearby containers",
   "key.quickstack.config": "Open QuickStack settings",
-
   "quickstack.button.quick_stack": "Quick stack to nearby containers\nItems go into containers that already hold them.\nAlt+click a slot to lock it.",
   "quickstack.button.sort_inventory": "Sort inventory\nLocked slots stay where they are.",
   "quickstack.button.find": "Find an item in nearby containers",
@@ -16,7 +15,6 @@
   "quickstack.button.loot_all": "Loot all",
   "quickstack.button.sort_container": "Sort this container",
   "quickstack.button.toggle_excluded": "Exclude this container from quick stack to nearby\nClick again to include it.",
-
   "quickstack.message.no_containers": "No containers nearby",
   "quickstack.message.nothing_to_stack": "Nothing to stack: no nearby container holds these items",
   "quickstack.message.stacked": "Stacking %s items into %s containers",
@@ -27,11 +25,9 @@
   "quickstack.message.found": "Found in %s containers",
   "quickstack.message.not_found": "Not found in nearby containers",
   "quickstack.message.server_missing": "QuickStack is not installed on this server",
-
   "quickstack.sort_mode.category": "Category",
   "quickstack.sort_mode.name": "Name",
   "quickstack.sort_mode.count": "Count",
-
   "quickstack.config.title": "QuickStack Settings",
   "quickstack.config.client_column": "Your preferences",
   "quickstack.config.server_column": "World (singleplayer)",
@@ -54,8 +50,14 @@
   "quickstack.config.undo_seconds": "Undo window (s)",
   "quickstack.config.craft_nearby_server": "Allow crafting from nearby",
   "quickstack.config.modded_containers": "Modded containers",
-
   "quickstack.find.title": "Find in nearby containers",
-  "quickstack.find.hint": "Item name or id, then Enter",
-  "quickstack.find.matches": "%s matching items"
+  "quickstack.find.hint": "Type an item name or id",
+  "quickstack.find.loading": "Looking in nearby containers...",
+  "quickstack.find.summary": "%s kinds within %s blocks",
+  "quickstack.find.in_containers": "In nearby containers: %s",
+  "quickstack.find.not_in_containers": "Not in nearby containers",
+  "quickstack.find.click": "Click to highlight the containers",
+  "quickstack.config.button_placement": "Button position",
+  "quickstack.button_placement.tab": "Tab above",
+  "quickstack.button_placement.inside": "Inside"
 }

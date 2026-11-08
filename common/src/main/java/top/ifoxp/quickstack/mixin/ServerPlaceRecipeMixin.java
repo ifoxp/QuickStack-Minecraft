@@ -5,6 +5,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.Holder;
 import net.minecraft.recipebook.ServerPlaceRecipe;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.inventory.Slot;
@@ -35,6 +37,21 @@ public abstract class ServerPlaceRecipeMixin {
             Operation<Void> original, @Local(argsOnly = true) Inventory inventory) {
         original.call(menu, contents);
         NearbyCrafting.account(inventory.player, contents);
+    }
+
+    /** Clearing the grid for a new recipe sends borrowed ingredients back to their containers first. */
+    @WrapOperation(
+            method = "clearGrid",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/player/Inventory;placeItemBackInInventory(Lnet/minecraft/world/item/ItemStack;ZLnet/minecraft/util/Prediction;)V"))
+    private void quickstack$returnLoans(Inventory instance, ItemStack stack, boolean sendPacket, Prediction prediction,
+            Operation<Void> original) {
+        if (instance.player instanceof ServerPlayer player) {
+            NearbyCrafting.returnLoans(player, stack);
+        }
+        if (!stack.isEmpty()) {
+            original.call(instance, stack, sendPacket, prediction);
+        }
     }
 
     @Inject(method = "moveItemToGrid", at = @At("HEAD"), cancellable = true)

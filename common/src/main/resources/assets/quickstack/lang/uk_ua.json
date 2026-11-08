@@ -5,7 +5,6 @@
   "key.quickstack.undo": "Скасувати останнє складання",
   "key.quickstack.find": "Знайти предмет у скринях поруч",
   "key.quickstack.config": "Налаштування QuickStack",
-
   "quickstack.button.quick_stack": "Скласти в найближчі скрині\nПредмети летять у скрині, де такі вже є.\nAlt+клік по слоту — зафіксувати його.",
   "quickstack.button.sort_inventory": "Сортувати інвентар\nЗафіксовані слоти не рухаються.",
   "quickstack.button.find": "Знайти предмет у скринях поруч",
@@ -16,7 +15,6 @@
   "quickstack.button.loot_all": "Забрати все",
   "quickstack.button.sort_container": "Сортувати скриню",
   "quickstack.button.toggle_excluded": "Не складати в цю скриню з найближчих\nНатисни ще раз, щоб повернути.",
-
   "quickstack.message.no_containers": "Поруч немає скринь",
   "quickstack.message.nothing_to_stack": "Нічого складати: у скринях поруч немає таких предметів",
   "quickstack.message.stacked": "Складаю %s предметів у %s скринь",
@@ -27,11 +25,9 @@
   "quickstack.message.found": "Знайдено в %s скринях",
   "quickstack.message.not_found": "У скринях поруч не знайдено",
   "quickstack.message.server_missing": "На цьому сервері немає QuickStack",
-
   "quickstack.sort_mode.category": "Категорія",
   "quickstack.sort_mode.name": "Назва",
   "quickstack.sort_mode.count": "Кількість",
-
   "quickstack.config.title": "Налаштування QuickStack",
   "quickstack.config.client_column": "Твої налаштування",
   "quickstack.config.server_column": "Світ (одиночна гра)",
@@ -54,8 +50,14 @@
   "quickstack.config.undo_seconds": "Час на скасування (с)",
   "quickstack.config.craft_nearby_server": "Дозволити крафт зі скринь",
   "quickstack.config.modded_containers": "Модові скрині",
-
   "quickstack.find.title": "Пошук у скринях поруч",
-  "quickstack.find.hint": "Назва або id предмета, потім Enter",
-  "quickstack.find.matches": "Збігів: %s"
+  "quickstack.find.hint": "Назва або id предмета",
+  "quickstack.find.loading": "Дивлюся в скринях поруч...",
+  "quickstack.find.summary": "%s видів у радіусі %s блоків",
+  "quickstack.find.in_containers": "У скринях поруч: %s",
+  "quickstack.find.not_in_containers": "У скринях поруч немає",
+  "quickstack.find.click": "Клік — підсвітити скрині",
+  "quickstack.config.button_placement": "Розташування кнопок",
+  "quickstack.button_placement.tab": "Вкладка зверху",
+  "quickstack.button_placement.inside": "Усередині"
 }

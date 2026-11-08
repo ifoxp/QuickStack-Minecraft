@@ -41,6 +41,11 @@ public final class Highlighter {
         ACTIVE.replaceAll((pos, entry) -> new Entry(entry.ticksLeft - 1, entry.search));
         ACTIVE.entrySet().removeIf(e -> e.getValue().ticksLeft <= 0);
         ACTIVE.forEach((pos, entry) -> {
+            if (entry.search && entry.ticksLeft % 2 == 0) {
+                // A rising column above search results, visible over walls and from a distance.
+                level.addParticle(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5,
+                        (random.nextDouble() - 0.5) * 0.01, 0.18, (random.nextDouble() - 0.5) * 0.01);
+            }
             if (entry.ticksLeft % 3 != 0) {
                 return;
             }

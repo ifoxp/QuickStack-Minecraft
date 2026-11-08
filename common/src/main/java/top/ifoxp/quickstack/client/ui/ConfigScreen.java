@@ -29,7 +29,7 @@ public class ConfigScreen extends Screen {
 
     private static final int WIDTH = 150;
     private static final int HEIGHT = 20;
-    private static final int ROW = 24;
+    private static final int ROW = 22;
 
     private final @Nullable Screen parent;
 
@@ -53,6 +53,11 @@ public class ConfigScreen extends Screen {
         add(left, top, row++, toggle("quickstack.config.highlight", client.highlightTargets, value -> client.highlightTargets = value));
         add(left, top, row++, toggle("quickstack.config.inventory_buttons", client.showInventoryButtons,
                 value -> client.showInventoryButtons = value));
+        add(left, top, row++, CycleButton.<ClientConfig.ButtonPlacement>builder(
+                        placement -> Component.translatable(placement.translationKey()), client.buttonPlacement)
+                .withValues(ClientConfig.ButtonPlacement.values())
+                .create(0, 0, WIDTH, HEIGHT, Component.translatable("quickstack.config.button_placement"),
+                        (button, value) -> client.buttonPlacement = value));
         add(left, top, row++, toggle("quickstack.config.container_buttons", client.showContainerButtons,
                 value -> client.showContainerButtons = value));
         add(left, top, row++, toggle("quickstack.config.middle_click_sort", client.middleClickSort,

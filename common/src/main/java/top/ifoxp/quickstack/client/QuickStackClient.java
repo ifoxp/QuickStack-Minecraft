@@ -159,6 +159,18 @@ public final class QuickStackClient {
         ClientState.setNearbyItems(ClientConfig.get().craftFromNearby ? payload.items() : List.of());
     }
 
+    /** Asks the server for the contents of nearby containers; the answer replaces {@link ClientState#storage()}. */
+    public static void requestStorage() {
+        ClientState.setStorage(null);
+        if (serverHasMod()) {
+            Services.client().sendToServer(new Payloads.RequestStorage());
+        }
+    }
+
+    public static void onStorageSummary(Payloads.StorageSummary payload) {
+        ClientState.setStorage(payload);
+    }
+
     public static void onHighlight(Payloads.Highlight payload) {
         if (payload.search() || ClientConfig.get().highlightTargets) {
             Highlighter.add(payload.positions(), payload.ticks(), payload.search());

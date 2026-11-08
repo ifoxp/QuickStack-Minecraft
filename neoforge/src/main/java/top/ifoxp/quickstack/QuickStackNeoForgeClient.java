@@ -35,6 +35,7 @@ final class QuickStackNeoForgeClient {
             event.register(Payloads.LockSync.TYPE, (payload, context) -> QuickStackClient.onLockSync(payload));
             event.register(Payloads.NearbyItems.TYPE, (payload, context) -> QuickStackClient.onNearbyItems(payload));
             event.register(Payloads.Highlight.TYPE, (payload, context) -> QuickStackClient.onHighlight(payload));
+            event.register(Payloads.StorageSummary.TYPE, (payload, context) -> QuickStackClient.onStorageSummary(payload));
         });
 
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> QuickStackClient.tick(Minecraft.getInstance()));

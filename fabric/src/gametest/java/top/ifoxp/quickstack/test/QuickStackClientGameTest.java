@@ -17,6 +17,7 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -42,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import top.ifoxp.quickstack.client.ClientState;
 import top.ifoxp.quickstack.client.QuickStackClient;
 import top.ifoxp.quickstack.client.ui.ContainerScreenAccess;
+import top.ifoxp.quickstack.client.ui.FindItemScreen;
 import top.ifoxp.quickstack.client.ui.IconButton;
 import top.ifoxp.quickstack.network.Payloads;
 import top.ifoxp.quickstack.platform.Services;
@@ -215,7 +217,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         clickButton(context, IconButton.Icon.DEPOSIT_MATCHING);
         world.getConnection().waitForServerboundPackets();
         context.waitTicks(3);
-        clickButton(context, IconButton.Icon.SORT);
+        clickButton(context, IconButton.Icon.SORT, "quickstack.button.sort_container");
         world.getConnection().waitForServerboundPackets();
         context.waitTicks(3);
         context.takeScreenshot("qs_07_chest_sorted");
@@ -305,6 +307,53 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         context.waitTicks(3);
         context.takeScreenshot("qs_09_crafting_placed");
         context.runOnClient(mc -> mc.player.closeContainer());
+        context.waitTicks(3);
+        world.getServer().runOnServer(server -> {
+            ServerPlayer player = player(server);
+            check("closing the table returned the borrowed planks to the chest",
+                    count(container(player.level(), chest), Items.OAK_PLANKS) == 10,
+                    "chest has " + count(container(player.level(), chest), Items.OAK_PLANKS));
+            check("no planks ended up in the inventory", count(player.getInventory(), Items.OAK_PLANKS) == 0,
+                    "player has " + count(player.getInventory(), Items.OAK_PLANKS));
+        });
+
+        // Shift-click (max) placement, craft once, close: what is left goes back to the chest.
+        openBlock(context, table);
+        context.waitForScreen(CraftingScreen.class);
+        context.waitTicks(3);
+        world.getServer().runOnServer(server -> {
+            ServerPlayer player = player(server);
+            RecipeHolder<?> stick = server.getRecipeManager()
+                    .byKey(ResourceKey.create(Registries.RECIPE, Identifier.withDefaultNamespace("stick")))
+                    .orElseThrow();
+            AbstractCraftingMenu menu = (AbstractCraftingMenu) player.containerMenu;
+            menu.handlePlacement(true, false, stick, player.level(), player.getInventory());
+            check("max placement emptied the chest of planks", count(container(player.level(), chest), Items.OAK_PLANKS) == 0,
+                    "chest has " + count(container(player.level(), chest), Items.OAK_PLANKS));
+            ItemStack result = menu.getResultSlot().getItem().copy();
+            menu.getResultSlot().onTake(player, result);
+        });
+        context.runOnClient(mc -> mc.player.closeContainer());
+        context.waitTicks(3);
+        world.getServer().runOnServer(server -> {
+            ServerPlayer player = player(server);
+            check("after crafting once the 8 leftover planks went back to the chest",
+                    count(container(player.level(), chest), Items.OAK_PLANKS) == 8,
+                    "chest has " + count(container(player.level(), chest), Items.OAK_PLANKS));
+            check("leftovers did not land in the inventory", count(player.getInventory(), Items.OAK_PLANKS) == 0,
+                    "player has " + count(player.getInventory(), Items.OAK_PLANKS));
+        });
+
+        // The search screen lists what nearby containers hold.
+        context.setScreen(() -> new FindItemScreen(null));
+        context.waitTicks(10);
+        int kinds = context.computeOnClient(mc -> ClientState.storage() == null ? -1 : ClientState.storage().items().size());
+        check("search screen received the nearby storage summary", kinds > 3, "kinds = " + kinds);
+        context.takeScreenshot("qs_09b_search_all");
+        context.getInput().typeChars("plank");
+        context.waitTicks(2);
+        context.takeScreenshot("qs_09c_search_planks");
+        context.setScreen(() -> null);
         context.waitTicks(2);
     }
 
@@ -446,9 +495,15 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
     }
 
     private static void clickButton(ClientGameTestContext context, IconButton.Icon icon) {
+        clickButton(context, icon, null);
+    }
+
+    /** {@code tooltipKey} picks one button when several share an icon. */
+    private static void clickButton(ClientGameTestContext context, IconButton.Icon icon, String tooltipKey) {
         double[] center = context.computeOnClient(mc -> {
             for (GuiEventListener child : mc.gui.screen().children()) {
-                if (child instanceof IconButton button && button.icon() == icon) {
+                if (child instanceof IconButton button && button.icon() == icon && (tooltipKey == null
+                        || (button.getMessage().getContents() instanceof TranslatableContents contents && contents.getKey().equals(tooltipKey)))) {
                     return new double[] {button.getX() + IconButton.SIZE / 2.0, button.getY() + IconButton.SIZE / 2.0};
                 }
             }

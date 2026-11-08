@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -50,11 +51,15 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
 
     @Inject(method = "init", at = @At("TAIL"))
     private void quickstack$addButtons(CallbackInfo ci) {
-        ScreenButtons.addButtons((AbstractContainerScreen<?>) (Object) this, this::quickstack$addWidget);
+        ScreenButtons.addButtons((AbstractContainerScreen<?>) (Object) this, this::quickstack$addWidget, this::quickstack$addRenderable);
     }
 
     private void quickstack$addWidget(AbstractWidget widget) {
         this.addRenderableWidget(widget);
+    }
+
+    private void quickstack$addRenderable(Renderable renderable) {
+        this.addRenderableOnly(renderable);
     }
 
     @Inject(method = "extractSlot", at = @At("RETURN"))

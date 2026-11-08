@@ -96,6 +96,17 @@ public final class Payloads {
         }
     }
 
+    /** Ask what the containers within the search radius hold (for the search screen). */
+    public record RequestStorage() implements CustomPacketPayload {
+        public static final Type<RequestStorage> TYPE = typeOf("request_storage");
+        public static final StreamCodec<RegistryFriendlyByteBuf, RequestStorage> CODEC = StreamCodec.unit(new RequestStorage());
+
+        @Override
+        public Type<RequestStorage> type() {
+            return TYPE;
+        }
+    }
+
     /** Undo the last quick stack to nearby containers. */
     public record Undo() implements CustomPacketPayload {
         public static final Type<Undo> TYPE = typeOf("undo");
@@ -161,6 +172,20 @@ public final class Payloads {
 
         @Override
         public Type<NearbyItems> type() {
+            return TYPE;
+        }
+    }
+
+    /** Every item kind in the containers within {@code radius} blocks, with totals (for the search screen). */
+    public record StorageSummary(List<NearbyCount> items, int radius) implements CustomPacketPayload {
+        public static final Type<StorageSummary> TYPE = typeOf("storage_summary");
+        public static final StreamCodec<RegistryFriendlyByteBuf, StorageSummary> CODEC = StreamCodec.composite(
+                NearbyCount.CODEC.apply(ByteBufCodecs.list(8192)), StorageSummary::items,
+                ByteBufCodecs.VAR_INT, StorageSummary::radius,
+                StorageSummary::new);
+
+        @Override
+        public Type<StorageSummary> type() {
             return TYPE;
         }
     }
