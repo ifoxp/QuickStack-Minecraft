@@ -64,3 +64,10 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
   below the edge gets a zero-height scissor and 26.3's GuiRenderer throws "Scissor size must be >0". ConfigScreen now
   has two tabs (preferences / world) and lays widgets out in as many columns as the height needs. Highlighter lights
   both halves of a double chest (client looks up the partner from the block state). Gametest 45/45, incl. GUI scale 4.
+- 2026-11-08: removed the template's `pack.mcmeta` (pack_format 8): both loaders describe mod resources themselves,
+  and on 1.21.x Fabric it made the game log "Removed resource pack quickstack ... no longer compatible". The
+  self-check now waits for the loading overlay to close and also requires the mod's translations to be loaded.
+- 2026-11-08: release 0.1.0 for every range, one branch each (oldest first): mc/1.21.1 (1.21 – 1.21.1),
+  mc/1.21.3 (1.21.2 – 1.21.3), mc/1.21.4, mc/1.21.5, mc/1.21.8 (1.21.6 – 1.21.8), mc/1.21.10 (1.21.9 – 1.21.10),
+  mc/1.21.11, mc/26.1 (26.1 – 26.1.2), mc/26.2, main (26.3). Before 1.21.4 there is no client gametest API: those
+  branches run 36 server gametests (`:fabric:runGameTest`) instead of the 45 client checks.
