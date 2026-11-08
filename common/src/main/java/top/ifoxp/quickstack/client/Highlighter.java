@@ -1,0 +1,67 @@
+package top.ifoxp.quickstack.client;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.util.RandomSource;
+
+/**
+ * Makes containers sparkle: green for containers that received quick-stacked items, white rods for search
+ * results. Particles instead of outline rendering keep this independent of the renderer, which changes a lot
+ * between Minecraft versions.
+ */
+public final class Highlighter {
+
+    private static final Map<BlockPos, Entry> ACTIVE = new HashMap<>();
+
+    private record Entry(int ticksLeft, boolean search) {
+    }
+
+    private Highlighter() {
+    }
+
+    public static void add(List<BlockPos> positions, int ticks, boolean search) {
+        for (BlockPos pos : positions) {
+            ACTIVE.merge(pos.immutable(), new Entry(ticks, search),
+                    (old, fresh) -> new Entry(Math.max(old.ticksLeft, fresh.ticksLeft), old.search || fresh.search));
+        }
+    }
+
+    public static void tick(Minecraft minecraft) {
+        ClientLevel level = minecraft.level;
+        if (ACTIVE.isEmpty() || level == null) {
+            return;
+        }
+        RandomSource random = level.getRandom();
+        ACTIVE.replaceAll((pos, entry) -> new Entry(entry.ticksLeft - 1, entry.search));
+        ACTIVE.entrySet().removeIf(e -> e.getValue().ticksLeft <= 0);
+        ACTIVE.forEach((pos, entry) -> {
+            if (entry.ticksLeft % 3 != 0) {
+                return;
+            }
+            ParticleOptions particle = entry.search ? ParticleTypes.END_ROD : ParticleTypes.HAPPY_VILLAGER;
+            int count = entry.search ? 3 : 2;
+            for (int i = 0; i < count; i++) {
+                // A random point on the block's surface.
+                double x = random.nextDouble();
+                double y = random.nextDouble();
+                double z = random.nextDouble();
+                switch (random.nextInt(3)) {
+                    case 0 -> x = random.nextBoolean() ? -0.05 : 1.05;
+                    case 1 -> y = random.nextBoolean() ? -0.05 : 1.05;
+                    default -> z = random.nextBoolean() ? -0.05 : 1.05;
+                }
+                level.addParticle(particle, pos.getX() + x, pos.getY() + y, pos.getZ() + z, 0, entry.search ? 0.01 : 0, 0);
+            }
+        });
+    }
+
+    public static void clear() {
+        ACTIVE.clear();
+    }
+}

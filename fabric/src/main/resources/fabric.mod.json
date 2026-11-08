@@ -1,0 +1,36 @@
+{
+    "schemaVersion": 1,
+    "id": "${mod_id}",
+    "version": "${version}",
+    "name": "${mod_name}",
+    "description": "${description}",
+    "authors": [
+        "${mod_author}"
+    ],
+    "license": "${license}",
+    "icon": "assets/quickstack/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "top.ifoxp.quickstack.QuickStackFabric"
+        ],
+        "client": [
+            "top.ifoxp.quickstack.QuickStackFabricClient"
+        ],
+        "modmenu": [
+            "top.ifoxp.quickstack.compat.ModMenuIntegration"
+        ]
+    },
+    "mixins": [
+        "${mod_id}.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=${fabric_loader_version}",
+        "fabric-api": "*",
+        "minecraft": "~${minecraft_version}",
+        "java": ">=${java_version}"
+    },
+    "suggests": {
+        "modmenu": "*"
+    }
+}
