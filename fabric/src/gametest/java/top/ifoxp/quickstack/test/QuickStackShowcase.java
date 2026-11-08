@@ -2,8 +2,6 @@ package top.ifoxp.quickstack.test;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import java.io.IOException;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
@@ -52,10 +50,10 @@ import top.ifoxp.quickstack.network.Payloads;
 import top.ifoxp.quickstack.server.LockManager;
 
 /**
- * Records the GIFs for the mod page: one clip per feature, one frame per tick, in a small storage room. Only runs
- * with {@code -Dquickstack.showcase=true} ({@code ./gradlew :fabric:runClientGameTest -Pshowcase}). Frames and a
- * metadata file (cursor position and on-screen key badge per frame) go to build/run/clientGameTest/showcase/<clip>;
- * publish/tools/make_gifs.py turns them into GIFs.
+ * Records the clips for the mod page: one per feature, in a small storage room, at 30 fps rendered with exact
+ * partial ticks (ShowcaseOverlay draws the pointer and the key badge into the picture). Only runs with
+ * {@code -Dquickstack.showcase=true} ({@code ./gradlew :fabric:runClientGameTest -Pshowcase [-Pclips=a,b]}). Frames go
+ * to build/showcase/<clip>/f00000.png...; publish/tools/make_media.py turns them into WebP and GIF.
  */
 public class QuickStackShowcase implements FabricClientGameTest {
 
@@ -66,9 +64,12 @@ public class QuickStackShowcase implements FabricClientGameTest {
     private ClientGameTestContext context;
     private TestSingleplayerContext world;
     private BlockPos base;
+    private static final int FPS = 30;
     private Path clipDir;
-    private Writer meta;
     private int frame;
+    /** Ticks run since the clip began, and the tick time of the next frame to capture. */
+    private long tickClock;
+    private double nextFrameAt;
     /** Cursor in GUI units, or NaN when it should not be drawn (in the world view). */
     private double cursorX = Double.NaN;
     private double cursorY = Double.NaN;
@@ -80,6 +81,7 @@ public class QuickStackShowcase implements FabricClientGameTest {
             return;
         }
         this.context = context;
+        ShowcaseOverlay.register();
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             this.world = world;
             context.getInput().resizeWindow(WIDTH, HEIGHT);
@@ -97,14 +99,21 @@ public class QuickStackShowcase implements FabricClientGameTest {
             buildRoom();
             world.getConnection().waitForChunksRender();
 
-            quickStackClip();
-            lockClip();
-            chestButtonsClip();
-            sortClip();
-            shiftSweepClip();
-            wheelClip();
-            craftingClip();
-            searchClip();
+            java.util.Set<String> only = java.util.Set.of(System.getProperty("quickstack.showcase.clips", "").split(","));
+            java.util.Map<String, Runnable> clips = new java.util.LinkedHashMap<>();
+            clips.put("quick_stack", this::quickStackClip);
+            clips.put("lock_slots", this::lockClip);
+            clips.put("chest_buttons", this::chestButtonsClip);
+            clips.put("sort", this::sortClip);
+            clips.put("shift_sweep", this::shiftSweepClip);
+            clips.put("wheel", this::wheelClip);
+            clips.put("crafting", this::craftingClip);
+            clips.put("search", this::searchClip);
+            clips.forEach((name, clip) -> {
+                if (only.contains("") || only.contains(name)) {
+                    clip.run();
+                }
+            });
         }
     }
 
@@ -433,44 +442,57 @@ public class QuickStackShowcase implements FabricClientGameTest {
     // ---- recording ----
 
     private void begin(String clip) {
+        hideCursor();
+        badge = "";
+        context.setScreen(() -> null);
+        // Outside the run directory, which Loom clears before every test run.
+        clipDir = Path.of(System.getProperty("quickstack.showcase.dir", "showcase"), clip).toAbsolutePath();
         try {
-            clipDir = Path.of("showcase", clip).toAbsolutePath();
             Files.createDirectories(clipDir);
-            meta = Files.newBufferedWriter(clipDir.resolve("frames.jsonl"), StandardCharsets.UTF_8);
+            try (var old = Files.list(clipDir)) {
+                for (Path file : old.toList()) {
+                    Files.delete(file);
+                }
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         frame = 0;
-        hideCursor();
-        badge = "";
+        tickClock = 0;
+        nextFrameAt = 0;
+        ShowcaseOverlay.active = true;
         LOG.info("[showcase] recording {}", clip);
     }
 
     private void end() {
-        try {
-            meta.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        shots(6);
+        ShowcaseOverlay.active = false;
         context.setScreen(() -> null);
         context.waitTicks(3);
         LOG.info("[showcase] {} frames", frame);
     }
 
-    /** One frame per tick: screenshot, then a line of metadata, then the tick. */
+    /**
+     * Runs {@code count} ticks and captures the frames that fall into them at {@link #FPS}: each frame is rendered
+     * with its exact partial tick, so motion between ticks (flying items, lids, camera, the drawn pointer) is
+     * interpolated by the game itself.
+     */
     private void shots(int count) {
         for (int i = 0; i < count; i++) {
             context.runOnClient(mc -> mc.gui.toastManager().clear());
-            String name = String.format("f%04d", frame);
-            context.takeScreenshot(TestScreenshotOptions.of(name).disableCounterPrefix().withDestinationDir(clipDir));
-            double scale = context.computeOnClient(mc -> (double) mc.getWindow().getScreenWidth() / mc.getWindow().getGuiScaledWidth());
-            try {
-                meta.write(String.format(java.util.Locale.ROOT, "{\"file\":\"%s.png\",\"x\":%.1f,\"y\":%.1f,\"badge\":\"%s\"}%n", name,
-                        Double.isNaN(cursorX) ? -1 : cursorX * scale, Double.isNaN(cursorY) ? -1 : cursorY * scale, badge));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            ShowcaseOverlay.badge = badge;
+            if (Double.isNaN(cursorX)) {
+                ShowcaseOverlay.cursorVisible = false;
+            } else {
+                ShowcaseOverlay.cursorTo(cursorX, cursorY, !ShowcaseOverlay.cursorVisible);
             }
-            frame++;
+            while (nextFrameAt < tickClock + 1) {
+                float delta = (float) (nextFrameAt - tickClock);
+                String name = String.format("f%05d", frame++);
+                context.takeScreenshot(TestScreenshotOptions.of(name).disableCounterPrefix().withDestinationDir(clipDir).withDeltaTicks(delta));
+                nextFrameAt += 20.0 / FPS;
+            }
+            tickClock++;
             context.waitTick();
         }
     }
@@ -478,9 +500,10 @@ public class QuickStackShowcase implements FabricClientGameTest {
     private void hideCursor() {
         cursorX = Double.NaN;
         cursorY = Double.NaN;
+        ShowcaseOverlay.cursorVisible = false;
     }
 
-    /** Glides the real cursor to a GUI point, one step per frame (hover effects and drags follow it). */
+    /** Glides the cursor to a GUI point, one step per tick (hover effects and drags follow it). */
     private void moveTo(double x, double y, int frames) {
         double fromX = Double.isNaN(cursorX) ? x - 60 : cursorX;
         double fromY = Double.isNaN(cursorY) ? y + 40 : cursorY;

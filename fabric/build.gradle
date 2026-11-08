@@ -29,10 +29,12 @@ fabricApi {
     }
 }
 
-// ./gradlew :fabric:runClientGameTest -Pshowcase records the GIF frames for the mod page instead of testing.
+// ./gradlew :fabric:runClientGameTest -Pshowcase [-Pclips=quick_stack,wheel] records the mod page clips instead of testing.
 if (project.hasProperty('showcase')) {
     loom.runs.matching { it.name == 'clientGameTest' }.configureEach {
         vmArg '-Dquickstack.showcase=true'
+        vmArg "-Dquickstack.showcase.clips=${project.findProperty('clips') ?: ''}"
+        vmArg "-Dquickstack.showcase.dir=${rootProject.file('build/showcase').absolutePath}"
     }
 }
 

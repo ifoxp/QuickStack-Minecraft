@@ -81,4 +81,5 @@ Modded chests that work like vanilla containers (18+ slots) are supported automa
 
 ### 🌍 Languages
 English, Українська, Deutsch, Français, Español, Português (Brasil), Italiano, Polski, Čeština, Türkçe,
-Nederlands, 日本語, 한국어, 简体中文, 繁體中文.
+Nederlands, 日本語, 한국어, 简体中文, 繁體中文, Қазақша, Oʻzbekcha, Кыргызча, Azərbaycanca, Հայերեն, ქართული,
+Lietuvių, Latviešu, Eesti, Română, Монгол.

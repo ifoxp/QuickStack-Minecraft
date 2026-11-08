@@ -14,3 +14,8 @@
 *.cfg text eol=lf
 *.jks binary
 *.ogg binary
+*.webp binary
+*.mp4 binary
+*.jpg binary
+*.ico binary
+*.ttf binary
