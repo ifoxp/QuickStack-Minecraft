@@ -2,6 +2,7 @@ package top.ifoxp.quickstack.client;
 
 import java.util.List;
 import net.minecraft.client.Minecraft;
+import net.minecraft.locale.Language;
 import top.ifoxp.quickstack.QuickStack;
 
 /**
@@ -31,9 +32,9 @@ public final class SelfCheck {
         return Boolean.getBoolean("quickstack.selfcheck");
     }
 
-    /** Runs once, on the first client tick (rendering and registries are ready by then). */
+    /** Runs once, on the first client tick after the loading screen (resources are loaded by then). */
     public static void tick(Minecraft minecraft) {
-        if (done) {
+        if (done || minecraft.gui.overlay() != null) {
             return;
         }
         done = true;
@@ -47,7 +48,12 @@ public final class SelfCheck {
             }
         }
         QuickStack.LOG.info("[selfcheck] {} / {} mixin targets loaded and transformed", loaded, MIXIN_TARGETS.size());
-        if (loaded == MIXIN_TARGETS.size()) {
+        // The mod's own resources (translations, icons) must load too, from the jar's assets.
+        boolean translations = Language.getInstance().has("key.quickstack.quick_stack");
+        if (!translations) {
+            QuickStack.LOG.error("[selfcheck] FAIL: QuickStack translations are not loaded");
+        }
+        if (loaded == MIXIN_TARGETS.size() && translations) {
             QuickStack.LOG.info("[selfcheck] OK");
         }
         minecraft.stop();
