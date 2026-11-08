@@ -18,8 +18,8 @@ import top.ifoxp.quickstack.platform.Services;
 /** Client side: key mappings, the actions behind the buttons and the handlers of server packets. */
 public final class QuickStackClient {
 
-    /** Registered by each loader (Fabric: vanilla registry, NeoForge: RegisterKeyMappingsEvent). */
-    public static final KeyMapping.Category CATEGORY = new KeyMapping.Category(QuickStack.id("main"));
+    /** Key category; in 1.21.x it is the translation key itself. */
+    public static final String CATEGORY = "key.category." + QuickStack.MOD_ID + ".main";
 
     public static final KeyMapping QUICK_STACK = new KeyMapping("key.quickstack.quick_stack", InputConstants.KEY_Z, CATEGORY);
     public static final KeyMapping SORT = new KeyMapping("key.quickstack.sort", InputConstants.UNKNOWN.getValue(), CATEGORY);
@@ -46,7 +46,7 @@ public final class QuickStackClient {
             return false;
         }
         if (!serverHasMod()) {
-            minecraft.player.sendOverlayMessage(Component.translatable("quickstack.message.server_missing"));
+            minecraft.player.displayClientMessage(Component.translatable("quickstack.message.server_missing"), true);
             return false;
         }
         return true;
@@ -59,7 +59,7 @@ public final class QuickStackClient {
             return;
         }
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.gui.screen() != null) {
+        if (minecraft.screen != null) {
             minecraft.player.closeContainer();
         }
         Services.client().sendToServer(new Payloads.QuickStackNearby(ClientConfig.get().animation));
@@ -94,7 +94,7 @@ public final class QuickStackClient {
             return;
         }
         Services.client().sendToServer(new Payloads.FindItems(
-                stacks.stream().map(ItemStack::typeHolder).distinct().limit(Payloads.FindItems.MAX).toList()));
+                stacks.stream().map(ItemStack::getItemHolder).distinct().limit(Payloads.FindItems.MAX).toList()));
     }
 
     // ---- ticks ----
@@ -118,10 +118,10 @@ public final class QuickStackClient {
             undo();
         }
         while (FIND.consumeClick()) {
-            minecraft.gui.setScreen(new top.ifoxp.quickstack.client.ui.FindItemScreen(null));
+            minecraft.setScreen(new top.ifoxp.quickstack.client.ui.FindItemScreen(null));
         }
         while (CONFIG.consumeClick()) {
-            minecraft.gui.setScreen(new ConfigScreen(null));
+            minecraft.setScreen(new ConfigScreen(null));
         }
         FlightAnimator.tick(minecraft);
         Highlighter.tick(minecraft);
@@ -130,7 +130,7 @@ public final class QuickStackClient {
 
     /** Keeps the recipe book's view of nearby containers fresh while a crafting grid is open. */
     private static void tickNearbyItems(Minecraft minecraft) {
-        boolean crafting = minecraft.gui.screen() instanceof AbstractContainerScreen<?> screen
+        boolean crafting = minecraft.screen instanceof AbstractContainerScreen<?> screen
                 && screen.getMenu() instanceof AbstractCraftingMenu;
         if (!crafting) {
             nearbyRefresh = 0;

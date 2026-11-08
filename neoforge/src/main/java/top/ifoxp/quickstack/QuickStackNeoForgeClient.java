@@ -25,7 +25,7 @@ final class QuickStackNeoForgeClient {
         container.registerExtensionPoint(IConfigScreenFactory.class, (mod, parent) -> new ConfigScreen(parent));
 
         modBus.addListener((RegisterKeyMappingsEvent event) -> {
-            event.registerCategory(QuickStackClient.CATEGORY);
+            // The category (a translation key in 1.21.x) needs no registration; NeoForge sorts unknown ones by name.
             for (KeyMapping key : QuickStackClient.KEYS) {
                 event.register(key);
             }

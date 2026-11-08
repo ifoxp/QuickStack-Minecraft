@@ -4,19 +4,17 @@ import com.mojang.blaze3d.platform.InputConstants;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
@@ -54,7 +52,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
     @Shadow protected @Nullable Slot hoveredSlot;
     @Shadow @Final protected AbstractContainerMenu menu;
 
-    @Shadow protected abstract void slotClicked(Slot slot, int slotId, int buttonNum, ContainerInput containerInput);
+    @Shadow protected abstract void slotClicked(Slot slot, int slotId, int buttonNum, ClickType clickType);
 
     @Shadow
     private @Nullable Slot getHoveredSlot(double x, double y) {
@@ -82,40 +80,34 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
         this.addRenderableOnly(renderable);
     }
 
-    @Inject(method = "extractSlot", at = @At("RETURN"))
-    private void quickstack$drawLock(GuiGraphicsExtractor graphics, Slot slot, int mouseX, int mouseY, CallbackInfo ci) {
+    @Inject(method = "renderSlot", at = @At("RETURN"))
+    private void quickstack$drawLock(GuiGraphics graphics, Slot slot, CallbackInfo ci) {
         ScreenButtons.drawSlotOverlay(graphics, slot);
     }
 
     // ---- Shift sweep: shift-click every slot the cursor passes over ----
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-    private void quickstack$startSweep(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
+    private void quickstack$startSweep(double x, double y, int button, CallbackInfoReturnable<Boolean> cir) {
         quickstack$swept.clear();
-        quickstack$sweeping = event.button() == InputConstants.MOUSE_BUTTON_LEFT
+        quickstack$sweeping = button == InputConstants.MOUSE_BUTTON_LEFT
                 && ClientConfig.get().shiftDrag == ClientConfig.ShiftDrag.WITH_MOUSE
-                && (event.hasShiftDown() || minecraft.hasShiftDown())
+                && hasShiftDown()
                 && menu.getCarried().isEmpty()
                 && !((Object) this instanceof CreativeModeInventoryScreen);
         if (!quickstack$sweeping || hoveredSlot == null) {
             return;
         }
-        if (event.hasShiftDown()) {
-            quickstack$swept.add(hoveredSlot); // vanilla shift-clicks this first one itself
-        } else {
-            // Shift is held but the event did not carry the modifier: do the shift-click here, or vanilla would
-            // pick the stack up instead.
-            quickstack$sweepSlot(hoveredSlot);
-            cir.setReturnValue(true);
-        }
+        // Vanilla reads Shift from the keyboard here too and shift-clicks this first one itself.
+        quickstack$swept.add(hoveredSlot);
     }
 
     @Inject(method = "mouseDragged", at = @At("HEAD"), cancellable = true)
-    private void quickstack$sweep(MouseButtonEvent event, double dx, double dy, CallbackInfoReturnable<Boolean> cir) {
-        if (!quickstack$sweeping || !minecraft.hasShiftDown()) {
+    private void quickstack$sweep(double x, double y, int button, double dx, double dy, CallbackInfoReturnable<Boolean> cir) {
+        if (!quickstack$sweeping || !hasShiftDown()) {
             return;
         }
-        Slot slot = getHoveredSlot(event.x(), event.y());
+        Slot slot = getHoveredSlot(x, y);
         if (slot != null) {
             quickstack$sweepSlot(slot);
         }
@@ -123,15 +115,15 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
     }
 
     @Inject(method = "mouseReleased", at = @At("HEAD"))
-    private void quickstack$endSweep(MouseButtonEvent event, CallbackInfoReturnable<Boolean> cir) {
+    private void quickstack$endSweep(double x, double y, int button, CallbackInfoReturnable<Boolean> cir) {
         quickstack$sweeping = false;
     }
 
     /** The "Shift only" mode: no button needed, checked every frame. */
-    @Inject(method = "extractContents", at = @At("TAIL"))
-    private void quickstack$hoverSweep(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
+    @Inject(method = "renderContents", at = @At("TAIL"))
+    private void quickstack$hoverSweep(GuiGraphics graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
         if (ClientConfig.get().shiftDrag != ClientConfig.ShiftDrag.SHIFT_ONLY
-                || (Object) this instanceof CreativeModeInventoryScreen || !minecraft.hasShiftDown()) {
+                || (Object) this instanceof CreativeModeInventoryScreen || !hasShiftDown()) {
             quickstack$hoverSwept.clear();
             return;
         }
@@ -143,7 +135,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
     private void quickstack$sweepSlot(Slot slot) {
         boolean locked = ScreenButtons.isLockableSlot(slot) && ClientState.isLocked(slot.getContainerSlot());
         if (slot.hasItem() && !locked && menu.getCarried().isEmpty() && quickstack$swept.add(slot)) {
-            slotClicked(slot, slot.index, 0, ContainerInput.QUICK_MOVE);
+            slotClicked(slot, slot.index, 0, ClickType.QUICK_MOVE);
         }
     }
 
@@ -181,26 +173,25 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
             if (carried.isEmpty() || !fits || !slot.mayPlace(carried)) {
                 return;
             }
-            slotClicked(slot, slot.index, 1, ContainerInput.PICKUP);
+            slotClicked(slot, slot.index, 1, ClickType.PICKUP);
         }
         cir.setReturnValue(true);
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-    private void quickstack$mouseClicked(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
+    private void quickstack$mouseClicked(double x, double y, int button, CallbackInfoReturnable<Boolean> cir) {
         Slot slot = this.hoveredSlot;
         if (slot == null || minecraft.player == null || !menu.getCarried().isEmpty() || !QuickStackClient.serverHasMod()) {
             return;
         }
-        // Mouse buttons are GLFW numbers in 26.2 (left = 0). The event's modifiers can miss a held Alt, so ask the keyboard too.
-        boolean alt = event.hasAltDown() || minecraft.hasAltDown();
-        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && alt && ScreenButtons.isLockableSlot(slot)) {
+        // Mouse buttons are GLFW numbers in 1.21.x (left = 0); modifiers are read from the keyboard.
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && hasAltDown() && ScreenButtons.isLockableSlot(slot)) {
             QuickStackClient.toggleLock(slot.getContainerSlot());
             AbstractWidget.playButtonClickSound(minecraft.getSoundManager());
             cir.setReturnValue(true);
             return;
         }
-        if (event.button() == InputConstants.MOUSE_BUTTON_MIDDLE && ClientConfig.get().middleClickSort && !minecraft.player.hasInfiniteMaterials()) {
+        if (button == InputConstants.MOUSE_BUTTON_MIDDLE && ClientConfig.get().middleClickSort && !minecraft.player.hasInfiniteMaterials()) {
             if (sortUnder(slot)) {
                 cir.setReturnValue(true);
             }
@@ -208,7 +199,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
     }
 
     @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
-    private void quickstack$keyPressed(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
+    private void quickstack$keyPressed(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
         if ((Object) this instanceof CreativeModeInventoryScreen || minecraft.player == null) {
             return;
         }
@@ -216,25 +207,25 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
         if (getFocused() instanceof EditBox box && box.canConsumeInput()) {
             return;
         }
-        if (QuickStackClient.QUICK_STACK.matches(event)) {
+        if (QuickStackClient.QUICK_STACK.matches(keyCode, scanCode)) {
             QuickStackClient.quickStackNearby();
             cir.setReturnValue(true);
-        } else if (QuickStackClient.UNDO.matches(event)) {
+        } else if (QuickStackClient.UNDO.matches(keyCode, scanCode)) {
             QuickStackClient.undo();
             cir.setReturnValue(true);
-        } else if (QuickStackClient.SORT.matches(event)) {
+        } else if (QuickStackClient.SORT.matches(keyCode, scanCode)) {
             if (hoveredSlot == null || !sortUnder(hoveredSlot)) {
                 QuickStackClient.menuAction(MenuAction.SORT_INVENTORY);
             }
             cir.setReturnValue(true);
-        } else if (QuickStackClient.FIND.matches(event)) {
+        } else if (QuickStackClient.FIND.matches(keyCode, scanCode)) {
             if (hoveredSlot != null && hoveredSlot.hasItem()) {
                 // Close first so the highlighted containers are visible.
                 var stack = hoveredSlot.getItem().copy();
                 minecraft.player.closeContainer();
                 QuickStackClient.find(List.of(stack));
             } else {
-                minecraft.gui.setScreen(new FindItemScreen(null));
+                minecraft.setScreen(new FindItemScreen(null));
             }
             cir.setReturnValue(true);
         }

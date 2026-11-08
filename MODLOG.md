@@ -54,6 +54,37 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
 - Showcase recorder (QuickStackShowcase, ShowcaseOverlay, `-Pshowcase`, tools/make_media.py) removed on this branch.
 - Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8 mixin targets), client gametest 45/45.
 
+## 1.21.6 – 1.21.8 (branch `mc/1.21.8`, ported from `mc/26.2` 2026-11-08)
+- Minecraft 1.21.8 (obfuscated, official Mojang mappings), Java 21 (`%USERPROFILE%\.jdks\jdk-21.0.13+9`).
+  Fabric Loader 0.20.1, Fabric API 0.136.1+1.21.8, Mod Menu 15.0.2, NeoForge 21.8.57, NeoForm 1.21.8-20250717.133445.
+  Build files from template branch `1.21.8`: Gradle 8.12, remapping Loom `fabric-loom` 1.10.5 (`modImplementation`,
+  refmap `quickstack.refmap.json`), ModDevGradle 2.0.97, `buildSrc/` instead of `build-logic/`, no Parchment.
+  `org.jspecify:jspecify` is `compileOnly` so `@Nullable` stays as on newer branches. Mixins `JAVA_21`.
+  Sources: `E:\Programing\GamesProjects\Minecraft\mc-src-1.21.8\` (vanilla, neoforge, fabric-api modules).
+- API differences from 26.2:
+  - `GuiGraphicsExtractor` → `GuiGraphics`; `extractRenderState`/`extractBackground`/`extractContents`/`extractSlot`
+    → `render`/`renderBackground`/`renderWidget` (widgets) and `renderContents`/`renderSlot(GuiGraphics, Slot)`
+    (container screen); `text`/`centeredText`/`item` → `drawString`/`drawCenteredString`/`renderItem`;
+  - input is raw ints: `mouseClicked(DDI)`, `mouseDragged(DDIDD)`, `mouseReleased(DDI)`, `keyPressed(III)`,
+    `AbstractButton.onPress()`, `KeyMapping.matches(keyCode, scanCode)`; modifiers come from the keyboard
+    (`Screen.hasShiftDown()/hasAltDown()`), and vanilla's own click reads Shift from the keyboard too, so the shift
+    sweep never has to shift-click the first slot itself; Enter = `KEY_RETURN`/`KEY_NUMPADENTER`;
+  - `KeyMapping` category is a String (the translation key `key.category.quickstack.main`); Fabric
+    `KeyBindingHelper.registerKeyBinding` adds it, NeoForge sorts unknown categories by name (no registration);
+  - `ResourceLocation`, `EntityType.ITEM`, `minecraft.screen`/`setScreen`, `ClickType` (not `ContainerInput`),
+    `ItemStack.getItemHolder()`, `player.displayClientMessage(msg, true)` (no `sendOverlayMessage`),
+    `CycleButton.builder(fn).withValues(..).withInitialValue(v)`;
+  - no `getEntitiesWithContainerOpen()`: `LidEvent` checks for a player whose `ChestMenu` shows this chest/barrel
+    (the opener counter's own test); shulker boxes had no viewer check in 26.x either. Chest sounds are
+    `SoundEvents.CHEST_OPEN/CLOSE` (no per-block chest sounds before copper chests);
+  - Fabric API (Yarn names): `KeyBindingHelper`, `PayloadTypeRegistry.playC2S()/playS2C()`; NeoForge
+    `FMLLoader.isProduction()` is static;
+  - client gametest API 4.2.5 has no `TestServerConnection` sync or `TestInput.lookAt`: the test waits 2 ticks
+    instead of `waitForServerbound/ClientboundPackets` (client and server tick in lockstep), sets yaw/pitch itself,
+    `getClientWorld().waitForChunksRender()`, `Minecraft.resizeDisplay()`. No check changed.
+- Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8), Fabric self-check built against 1.21.6
+  (Fabric API 0.128.2+1.21.6, `-Pminecraft_version=1.21.6 -Pfabric_version=...`) OK, client gametest 45/45.
+
 ## Log
 - 2026-11-08: template → QuickStack, all features written, both loaders compile. First client gametest run.
 - 2026-11-08: user feedback round 1. Lock marks made subtle (small faded padlock). Crafting from nearby now keeps
