@@ -30,11 +30,11 @@ public class QuickStackNeoForge {
 
     /** Locked inventory slots, saved with the player and kept on death. */
     public static final Supplier<AttachmentType<Long>> LOCKS = ATTACHMENTS.register("locks",
-            () -> AttachmentType.builder(() -> LockManager.DEFAULT_MASK).serialize(Codec.LONG.fieldOf("mask")).copyOnDeath().build());
+            () -> AttachmentType.builder(() -> LockManager.DEFAULT_MASK).serialize(Codec.LONG.fieldOf("mask").codec()).copyOnDeath().build());
 
     /** Set on a container block entity that quick stack to nearby containers must skip. */
     public static final Supplier<AttachmentType<Boolean>> EXCLUDED = ATTACHMENTS.register("excluded",
-            () -> AttachmentType.builder(() -> Boolean.FALSE).serialize(Codec.BOOL.fieldOf("excluded")).build());
+            () -> AttachmentType.builder(() -> Boolean.FALSE).serialize(Codec.BOOL.fieldOf("excluded").codec()).build());
 
     public QuickStackNeoForge(IEventBus modBus, ModContainer container, Dist dist) {
         QuickStack.init();
@@ -75,9 +75,12 @@ public class QuickStackNeoForge {
         }
     }
 
-    /** Client handlers are added in RegisterClientPayloadHandlersEvent, so servers never load client classes. */
+    /**
+     * NeoForge 21.5 takes the client handler here; it only calls into QuickStackNeoForgeClient when a packet
+     * arrives on a client, so a dedicated server never loads client classes.
+     */
     private static <T extends CustomPacketPayload> void registerClientBound(PayloadRegistrar registrar, Network.ClientBound<T> entry) {
-        registrar.playToClient(entry.type(), entry.codec());
+        registrar.playToClient(entry.type(), entry.codec(), (payload, context) -> QuickStackNeoForgeClient.handle(payload));
     }
 
     private static <T extends CustomPacketPayload> void registerServerBound(PayloadRegistrar registrar, Network.ServerBound<T> entry) {

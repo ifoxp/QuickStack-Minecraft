@@ -99,7 +99,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         BlockPos doubleRight = origin.offset(-1, 0, -4);
         BlockPos doubleLeft = origin.offset(0, 0, -4);
         world.getServer().runOnServer(server -> {
-            ServerLevel level = player(server).level();
+            ServerLevel level = player(server).serverLevel();
             level.setBlockAndUpdate(chest, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH));
             level.setBlockAndUpdate(barrel, Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP));
             level.setBlockAndUpdate(doubleRight, Blocks.CHEST.defaultBlockState()
@@ -132,7 +132,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         context.takeScreenshot("qs_03_landed");
 
         world.getServer().runOnServer(server -> {
-            ServerLevel level = player(server).level();
+            ServerLevel level = player(server).serverLevel();
             Inventory inventory = player(server).getInventory();
             check("cobblestone landed in the chest", count(container(level, chest), Items.COBBLESTONE) == 129,
                     "chest has " + count(container(level, chest), Items.COBBLESTONE));
@@ -250,7 +250,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         waitForServerboundPackets(context);
         context.waitTicks(3);
         world.getServer().runOnServer(server -> {
-            ServerLevel level = player(server).level();
+            ServerLevel level = player(server).serverLevel();
             check("restock left one cobblestone in the chest", count(container(level, chest), Items.COBBLESTONE) == 1,
                     "chest has " + count(container(level, chest), Items.COBBLESTONE));
             check("restock moved the rest to the player", count(player(server).getInventory(), Items.COBBLESTONE) == 129,
@@ -265,7 +265,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         context.waitTicks(3);
         context.takeScreenshot("qs_07_chest_sorted");
         world.getServer().runOnServer(server -> {
-            ServerLevel level = player(server).level();
+            ServerLevel level = player(server).serverLevel();
             Container container = container(level, chest);
             check("quick stack into chest moved all cobblestone back", count(container, Items.COBBLESTONE) == 130,
                     "chest has " + count(container, Items.COBBLESTONE));
@@ -288,7 +288,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         waitForServerboundPackets(context);
         context.waitTicks(3);
         world.getServer().runOnServer(server -> {
-            Container container = container(player(server).level(), chest);
+            Container container = container(player(server).serverLevel(), chest);
             check("middle click sorted the chest", container.getItem(0).is(Items.STONE) && container.getItem(1).is(Items.ANDESITE)
                     && container.getItem(2).is(Items.COBBLESTONE), "slots = " + container.getItem(0) + ", " + container.getItem(1));
             container.setItem(0, ItemStack.EMPTY);
@@ -298,12 +298,12 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         clickButton(context, IconButton.Icon.EXCLUDE);
         waitForServerboundPackets(context);
         context.waitTicks(2);
-        boolean excluded = world.getServer().computeOnServer(s -> Services.PLATFORM.isExcluded(player(s).level().getBlockEntity(chest)));
+        boolean excluded = world.getServer().computeOnServer(s -> Services.PLATFORM.isExcluded(player(s).serverLevel().getBlockEntity(chest)));
         check("exclude button marks the chest", excluded, "");
         clickButton(context, IconButton.Icon.EXCLUDE);
         waitForServerboundPackets(context);
         context.waitTicks(2);
-        boolean included = !world.getServer().computeOnServer(s -> Services.PLATFORM.isExcluded(player(s).level().getBlockEntity(chest)));
+        boolean included = !world.getServer().computeOnServer(s -> Services.PLATFORM.isExcluded(player(s).serverLevel().getBlockEntity(chest)));
         check("second click includes it again", included, "");
 
         // Shift + left button held, moved over three inventory slots: all three go into the chest.
@@ -332,7 +332,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         waitForServerboundPackets(context);
         context.waitTicks(3);
         world.getServer().runOnServer(server -> {
-            Container container = container(player(server).level(), chest);
+            Container container = container(player(server).serverLevel(), chest);
             boolean all = count(container, Items.SAND) == 5 && count(container, Items.GRAVEL) == 5 && count(container, Items.CLAY_BALL) == 5;
             check("shift sweep moved all three slots into the chest", all,
                     "sand " + count(container, Items.SAND) + ", gravel " + count(container, Items.GRAVEL) + ", clay " + count(container, Items.CLAY_BALL));
@@ -348,7 +348,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
 
         // Mouse wheel: up takes one item at a time onto the cursor, down puts one back.
         int cobbleSlot = world.getServer().computeOnServer(s -> {
-            Container container = container(player(s).level(), chest);
+            Container container = container(player(s).serverLevel(), chest);
             for (int i = 0; i < container.getContainerSize(); i++) {
                 if (container.getItem(i).is(Items.COBBLESTONE)) {
                     return i;
@@ -381,8 +381,8 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         world.getServer().runOnServer(server -> {
             ServerPlayer player = player(server);
             check("three notches down put them back one by one", player.containerMenu.getCarried().isEmpty()
-                    && count(container(player.level(), chest), Items.COBBLESTONE) == 130,
-                    "cursor " + player.containerMenu.getCarried() + ", chest " + count(container(player.level(), chest), Items.COBBLESTONE));
+                    && count(container(player.serverLevel(), chest), Items.COBBLESTONE) == 130,
+                    "cursor " + player.containerMenu.getCarried() + ", chest " + count(container(player.serverLevel(), chest), Items.COBBLESTONE));
         });
 
         context.runOnClient(mc -> mc.player.closeContainer());
@@ -394,7 +394,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         BlockPos table = origin.offset(0, 0, 2);
         BlockPos chest = origin.offset(2, 0, 2);
         world.getServer().runOnServer(server -> {
-            ServerLevel level = player(server).level();
+            ServerLevel level = player(server).serverLevel();
             level.setBlockAndUpdate(table, Blocks.CRAFTING_TABLE.defaultBlockState());
             level.setBlockAndUpdate(chest, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.NORTH));
             container(level, chest).setItem(0, new ItemStack(Items.OAK_PLANKS, 10));
@@ -414,7 +414,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
                     .byKey(ResourceKey.create(Registries.RECIPE, ResourceLocation.withDefaultNamespace("stick")))
                     .orElseThrow();
             AbstractCraftingMenu menu = (AbstractCraftingMenu) player.containerMenu;
-            menu.handlePlacement(false, false, stick, player.level(), player.getInventory());
+            menu.handlePlacement(false, false, stick, player.serverLevel(), player.getInventory());
             int inGrid = 0;
             for (Slot slot : menu.getInputGridSlots()) {
                 if (slot.getItem().is(Items.OAK_PLANKS)) {
@@ -422,8 +422,8 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
                 }
             }
             check("recipe placement pulled planks from the chest into the grid", inGrid == 2, "grid has " + inGrid);
-            check("the chest gave exactly those planks", count(container(player.level(), chest), Items.OAK_PLANKS) == 8,
-                    "chest has " + count(container(player.level(), chest), Items.OAK_PLANKS));
+            check("the chest gave exactly those planks", count(container(player.serverLevel(), chest), Items.OAK_PLANKS) == 8,
+                    "chest has " + count(container(player.serverLevel(), chest), Items.OAK_PLANKS));
             check("the result slot shows sticks", menu.getResultSlot().getItem().is(Items.STICK), "result = " + menu.getResultSlot().getItem());
         });
         context.waitTicks(3);
@@ -433,8 +433,8 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         world.getServer().runOnServer(server -> {
             ServerPlayer player = player(server);
             check("closing the table returned the borrowed planks to the chest",
-                    count(container(player.level(), chest), Items.OAK_PLANKS) == 10,
-                    "chest has " + count(container(player.level(), chest), Items.OAK_PLANKS));
+                    count(container(player.serverLevel(), chest), Items.OAK_PLANKS) == 10,
+                    "chest has " + count(container(player.serverLevel(), chest), Items.OAK_PLANKS));
             check("no planks ended up in the inventory", count(player.getInventory(), Items.OAK_PLANKS) == 0,
                     "player has " + count(player.getInventory(), Items.OAK_PLANKS));
         });
@@ -449,9 +449,9 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
                     .byKey(ResourceKey.create(Registries.RECIPE, ResourceLocation.withDefaultNamespace("stick")))
                     .orElseThrow();
             AbstractCraftingMenu menu = (AbstractCraftingMenu) player.containerMenu;
-            menu.handlePlacement(true, false, stick, player.level(), player.getInventory());
-            check("max placement emptied the chest of planks", count(container(player.level(), chest), Items.OAK_PLANKS) == 0,
-                    "chest has " + count(container(player.level(), chest), Items.OAK_PLANKS));
+            menu.handlePlacement(true, false, stick, player.serverLevel(), player.getInventory());
+            check("max placement emptied the chest of planks", count(container(player.serverLevel(), chest), Items.OAK_PLANKS) == 0,
+                    "chest has " + count(container(player.serverLevel(), chest), Items.OAK_PLANKS));
             ItemStack result = menu.getResultSlot().getItem().copy();
             menu.getResultSlot().onTake(player, result);
         });
@@ -460,8 +460,8 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         world.getServer().runOnServer(server -> {
             ServerPlayer player = player(server);
             check("after crafting once the 8 leftover planks went back to the chest",
-                    count(container(player.level(), chest), Items.OAK_PLANKS) == 8,
-                    "chest has " + count(container(player.level(), chest), Items.OAK_PLANKS));
+                    count(container(player.serverLevel(), chest), Items.OAK_PLANKS) == 8,
+                    "chest has " + count(container(player.serverLevel(), chest), Items.OAK_PLANKS));
             check("leftovers did not land in the inventory", count(player.getInventory(), Items.OAK_PLANKS) == 0,
                     "player has " + count(player.getInventory(), Items.OAK_PLANKS));
         });
@@ -492,7 +492,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         context.waitTicks(30);
         context.getInput().pressKey(QuickStackClient.QUICK_STACK);
         context.waitTicks(80);
-        int afterStack = world.getServer().computeOnServer(s -> count(container(player(s).level(), chest), Items.COBBLESTONE));
+        int afterStack = world.getServer().computeOnServer(s -> count(container(player(s).serverLevel(), chest), Items.COBBLESTONE));
         check("second quick stack landed", afterStack == 140, "chest has " + afterStack);
         context.runOnClient(mc -> QuickStackClient.undo());
         waitForServerboundPackets(context);
@@ -500,8 +500,8 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         world.getServer().runOnServer(server -> {
             check("undo returned the cobblestone", count(player(server).getInventory(), Items.COBBLESTONE) == 10,
                     "player has " + count(player(server).getInventory(), Items.COBBLESTONE));
-            check("undo took it out of the chest", count(container(player(server).level(), chest), Items.COBBLESTONE) == 130,
-                    "chest has " + count(container(player(server).level(), chest), Items.COBBLESTONE));
+            check("undo took it out of the chest", count(container(player(server).serverLevel(), chest), Items.COBBLESTONE) == 130,
+                    "chest has " + count(container(player(server).serverLevel(), chest), Items.COBBLESTONE));
         });
     }
 
@@ -522,7 +522,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         }
         world.getServer().runOnServer(server -> {
             ServerPlayer player = player(server);
-            ServerLevel level = player.level();
+            ServerLevel level = player.serverLevel();
             player.teleportTo(center.getX() + 0.5, center.getY(), center.getZ() + 0.5);
             for (int i = 0; i < kinds.length; i++) {
                 BlockPos pos = chests.get(i);
@@ -553,7 +553,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
 
         world.getServer().runOnServer(server -> {
             ServerPlayer player = player(server);
-            ServerLevel level = player.level();
+            ServerLevel level = player.serverLevel();
             check("every stack left the inventory", player.getInventory().isEmpty(), "inventory not empty");
             int total = 0;
             for (int i = 0; i < kinds.length; i++) {
@@ -595,7 +595,7 @@ public class QuickStackClientGameTest implements FabricClientGameTest {
         int oldRadius = ServerConfig.get().quickStackRadius;
         world.getServer().runOnServer(server -> {
             ServerPlayer player = player(server);
-            ServerLevel level = player.level();
+            ServerLevel level = player.serverLevel();
             player.teleportTo(center.getX() + 0.5, center.getY(), center.getZ() + 0.5);
             for (int i = 0; i < chests.size(); i++) {
                 BlockPos pos = chests.get(i);

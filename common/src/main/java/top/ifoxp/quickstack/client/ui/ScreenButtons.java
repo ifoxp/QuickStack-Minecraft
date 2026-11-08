@@ -202,6 +202,10 @@ public final class ScreenButtons {
             return;
         }
         // Kept quiet on purpose: a small faded padlock in the corner, no frame or tint over the item.
+        // Drawn in front of the item (1.21.5 items render at z 150, decorations at 200).
+        graphics.pose().pushPose();
+        graphics.pose().translate(0.0F, 0.0F, 200.0F);
         IconButton.drawIcon(graphics, IconButton.Icon.SMALL_LOCK, slot.x - 1, slot.y - 1, LOCK_MARK_COLOR);
+        graphics.pose().popPose();
     }
 }

@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img alt="Minecraft 1.21.6–1.21.8" src="https://img.shields.io/badge/Minecraft-1.21.6--1.21.8-62B47A?style=flat-square">
+  <img alt="Minecraft 1.21.5" src="https://img.shields.io/badge/Minecraft-1.21.5-62B47A?style=flat-square">
   <img alt="Fabric" src="https://img.shields.io/badge/Fabric-підтримується-DBD0B4?style=flat-square">
   <img alt="NeoForge" src="https://img.shields.io/badge/NeoForge-підтримується-E36D29?style=flat-square">
   <img alt="26 мов" src="https://img.shields.io/badge/мов-26-4C8BF5?style=flat-square">
@@ -105,7 +105,7 @@
 
 | | |
 |---|---|
-| Minecraft | **1.21.6 – 1.21.8** |
+| Minecraft | **1.21.5** |
 | Завантажувач | **Fabric** (з [Fabric API](https://modrinth.com/mod/fabric-api)) або **NeoForge** |
 | Де ставити | **і клієнт, і сервер** — в одиночній грі працює одразу |
 | Необов'язково | [Mod Menu](https://modrinth.com/mod/modmenu) (Fabric) — кнопка налаштувань у списку модів |
@@ -157,7 +157,7 @@ Latviešu, Eesti, Română, Монгол.
 
 ## Збирання з коду
 
-Minecraft 1.21.6 – 1.21.8 потребує **Java 21**.
+Minecraft 1.21.5 потребує **Java 21**.
 
 ```sh
 ./gradlew build -x javadoc                 # jar-файли в fabric/build/libs і neoforge/build/libs

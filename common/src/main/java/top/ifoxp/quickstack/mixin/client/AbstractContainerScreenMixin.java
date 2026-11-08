@@ -120,7 +120,7 @@ public abstract class AbstractContainerScreenMixin extends Screen implements Con
     }
 
     /** The "Shift only" mode: no button needed, checked every frame. */
-    @Inject(method = "renderContents", at = @At("TAIL"))
+    @Inject(method = "render", at = @At("TAIL"))
     private void quickstack$hoverSweep(GuiGraphics graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
         if (ClientConfig.get().shiftDrag != ClientConfig.ShiftDrag.SHIFT_ONLY
                 || (Object) this instanceof CreativeModeInventoryScreen || !hasShiftDown()) {

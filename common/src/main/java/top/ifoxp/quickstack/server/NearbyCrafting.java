@@ -165,7 +165,7 @@ public final class NearbyCrafting {
                 return;
             }
         }
-        loans.add(new Loan(player.level(), target.pos(), part.copyWithCount(1), part.getCount()));
+        loans.add(new Loan(player.serverLevel(), target.pos(), part.copyWithCount(1), part.getCount()));
     }
 
     public static boolean hasLoans(ServerPlayer player) {

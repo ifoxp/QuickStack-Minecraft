@@ -10,6 +10,7 @@ import net.minecraft.ChatFormatting;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -194,7 +195,7 @@ public class FindItemScreen extends Screen {
             int y = gridY() + (i / COLUMNS) * SLOT + 1;
             graphics.renderItem(entry.stack, x, y);
             if (!entry.stored) {
-                graphics.fill(x, y, x + 16, y + 16, 0xB08B8B8B);
+                graphics.fill(RenderType.guiOverlay(), x, y, x + 16, y + 16, 0xB08B8B8B); // over the item
             }
         }
         // Counts at 2/3 size, so totals like "1.2k" or "130" stay inside their slot.
@@ -206,11 +207,11 @@ public class FindItemScreen extends Screen {
             String count = shortCount(entry.count);
             int x = gridX() + (i % COLUMNS) * SLOT + 1;
             int y = gridY() + (i / COLUMNS) * SLOT + 1;
-            graphics.pose().pushMatrix();
-            graphics.pose().translate(x + 17, y + 17);
-            graphics.pose().scale(2.0F / 3.0F, 2.0F / 3.0F);
+            graphics.pose().pushPose();
+            graphics.pose().translate(x + 17, y + 17, 200.0F); // in front of the items, like vanilla stack counts
+            graphics.pose().scale(2.0F / 3.0F, 2.0F / 3.0F, 1.0F);
             graphics.drawString(font, count, -font.width(count), -font.lineHeight + 1, 0xFFFFFFFF, true);
-            graphics.pose().popMatrix();
+            graphics.pose().popPose();
         }
 
         Component status;
@@ -236,7 +237,7 @@ public class FindItemScreen extends Screen {
             } else {
                 lines.add(Component.translatable("quickstack.find.not_in_containers").withStyle(ChatFormatting.DARK_GRAY));
             }
-            graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+            graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
         }
     }
 

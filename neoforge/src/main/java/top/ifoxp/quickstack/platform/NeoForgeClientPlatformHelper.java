@@ -3,7 +3,7 @@ package top.ifoxp.quickstack.platform;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 import top.ifoxp.quickstack.network.Payloads;
 import top.ifoxp.quickstack.platform.services.IClientPlatformHelper;
 
@@ -11,7 +11,7 @@ public class NeoForgeClientPlatformHelper implements IClientPlatformHelper {
 
     @Override
     public void sendToServer(CustomPacketPayload payload) {
-        ClientPacketDistributor.sendToServer(payload);
+        PacketDistributor.sendToServer(payload);
     }
 
     @Override

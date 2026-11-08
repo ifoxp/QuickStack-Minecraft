@@ -48,7 +48,7 @@ public final class ContainerScanner {
         if (player.isSpectator()) {
             return result;
         }
-        ServerLevel level = player.level();
+        ServerLevel level = player.serverLevel();
         Vec3 eye = player.getEyePosition();
         double maxDistSqr = (radius + 0.5) * (radius + 0.5);
         int minChunkX = SectionPos.blockToSectionCoord(eye.x - radius);

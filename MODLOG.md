@@ -85,6 +85,24 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
 - Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8), Fabric self-check built against 1.21.6
   (Fabric API 0.128.2+1.21.6, `-Pminecraft_version=1.21.6 -Pfabric_version=...`) OK, client gametest 45/45.
 
+## 1.21.5 (branch `mc/1.21.5`, ported from `mc/1.21.8` 2026-11-08)
+- Minecraft 1.21.5, Java 21. Fabric Loader 0.20.1, Fabric API 0.128.2+1.21.5, Mod Menu 14.0.2, NeoForge 21.5.101,
+  NeoForm 1.21.5-20250325.162830. Tooling as on `mc/1.21.8` (template branch `1.21.5` has the same build files with
+  ModDevGradle 2.0.62-beta; 2.0.97 kept; its datagen run has no program arguments). Sources:
+  `E:\Programing\GamesProjects\Minecraft\mc-src-1.21.5\` (vanilla, neoforge).
+- API differences from 1.21.8:
+  - GUI before the 1.21.6 render rewrite: `PoseStack` (`pushPose`/`translate(x, y, z)`/`popPose`), `blit(RenderType::guiTextured, ...)`,
+    `renderComponentTooltip` (no `setComponentTooltipForNextFrame`); drawing is immediate with depth, so what must
+    cover an item is lifted to z 200 like vanilla stack counts (lock mark, search counts) or drawn with
+    `RenderType.guiOverlay()` (faded search entries);
+  - `AbstractContainerScreen` has no `renderContents`: the Shift-only sweep hooks `render` (TAIL);
+  - `ServerPlayer.level()` returns `Level`: `serverLevel()` (QuickStackManager, NearbyCrafting, ContainerScanner, gametest);
+  - NeoForge 21.5: no `RegisterClientPayloadHandlersEvent`/`ClientPacketDistributor`: client payloads are registered with
+    `playToClient(type, codec, handler)` whose handler calls `QuickStackNeoForgeClient.handle` (only loaded when a
+    packet reaches a client), `PacketDistributor.sendToServer`; attachments `serialize(Codec)` with
+    `Codec.LONG.fieldOf("mask").codec()` / `Codec.BOOL.fieldOf("excluded").codec()`, the same NBT as 1.21.8's `MapCodec`.
+- Verified: build, `[selfcheck] OK` on Fabric and NeoForge (8/8), client gametest 45/45 (no check changed).
+
 ## Log
 - 2026-11-08: template → QuickStack, all features written, both loaders compile. First client gametest run.
 - 2026-11-08: user feedback round 1. Lock marks made subtle (small faded padlock). Crafting from nearby now keeps

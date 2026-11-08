@@ -166,7 +166,7 @@ public final class QuickStackManager {
         ServerConfig config = ServerConfig.get();
         if (!animate) {
             for (Allocation allocation : allocations) {
-                QUEUE.add(new Pending(player.getUUID(), batch.id, player.level(), allocation.target().pos(), allocation.stack(), now + 1));
+                QUEUE.add(new Pending(player.getUUID(), batch.id, player.serverLevel(), allocation.target().pos(), allocation.stack(), now + 1));
             }
             List<BlockPos> positions = allocations.stream().map(a -> a.target().pos()).distinct().toList();
             Services.PLATFORM.sendToPlayer(player, new Payloads.Highlight(positions, 40, false));
@@ -185,14 +185,14 @@ public final class QuickStackManager {
             int travel = Mth.clamp(Mth.ceil(hover.distanceTo(target.center()) / config.flightSpeed), 5, 60);
             int arrive = launch + travel;
             flights.add(new Payloads.Flight(allocation.stack().copy(), target.center(), launch, arrive));
-            QUEUE.add(new Pending(player.getUUID(), batch.id, player.level(), target.pos(), allocation.stack(), now + arrive));
+            QUEUE.add(new Pending(player.getUUID(), batch.id, player.serverLevel(), target.pos(), allocation.stack(), now + arrive));
             int[] window = windows.computeIfAbsent(target, t -> new int[] {Integer.MAX_VALUE, 0});
             window[0] = Math.min(window[0], launch + travel / 2);
             window[1] = Math.max(window[1], arrive);
         }
         windows.forEach((target, window) -> {
-            LIDS.add(new LidEvent(player.level(), target.pos(), now + window[0], true));
-            LIDS.add(new LidEvent(player.level(), target.pos(), now + window[1] + 10, false));
+            LIDS.add(new LidEvent(player.serverLevel(), target.pos(), now + window[0], true));
+            LIDS.add(new LidEvent(player.serverLevel(), target.pos(), now + window[1] + 10, false));
         });
         Services.PLATFORM.sendToPlayer(player, new Payloads.Flights(flights, false));
     }

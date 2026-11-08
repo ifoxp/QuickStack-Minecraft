@@ -5,7 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import top.ifoxp.quickstack.QuickStack;
@@ -72,7 +72,7 @@ public class IconButton extends AbstractButton {
 
     /** {@code color} is ARGB; its alpha fades the icon. */
     public static void drawIcon(GuiGraphics graphics, Icon icon, int x, int y, int color) {
-        graphics.blit(RenderPipelines.GUI_TEXTURED, ICONS, x, y, icon.u(), 0, 8, 8, ATLAS_WIDTH, ATLAS_HEIGHT, color);
+        graphics.blit(RenderType::guiTextured, ICONS, x, y, icon.u(), 0, 8, 8, ATLAS_WIDTH, ATLAS_HEIGHT, color);
     }
 
     @Override
