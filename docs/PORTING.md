@@ -19,7 +19,7 @@ changes. Behaviour must stay identical across branches; a fix lands on `main` fi
 
 ## Steps
 
-1. **Worktree**: `git worktree add ../QuickStack-ports/<version> -b mc/<version> <newer branch>`.
+1. **Worktree**: `git worktree add local/ports/<version> -b mc/<version> <newer branch>` (`local/` is git-ignored locally).
 2. **Build files** from [MultiLoader-Template](https://github.com/jaredlll08/MultiLoader-Template) at the branch for the
    target version: `build-logic/`, the root and module `build.gradle` files, `settings.gradle`, the Gradle wrapper and
    the keys in `gradle.properties`. Then put back what QuickStack adds: mod properties, Mod Menu (`compileOnly` +

@@ -10,7 +10,7 @@ crafting from nearby containers, item search, undo. English + Ukrainian.
 - Gradle 9.9.0 (Loom 1.19.4 needs >= 9.8), Fabric Loom 1.19.4 (`net.fabricmc.fabric-loom`), Fabric Loader 0.20.1,
   Fabric API 0.165.2+26.3, Mod Menu 21.0.0 (optional), ModDevGradle 2.0.148, NeoForge 26.3.0.101, NeoForm 26.3-1.
 - Template: jaredlll08/MultiLoader-Template branch `26.3` (common + fabric + neoforge, sources compiled into each loader jar).
-- Decompiled sources for reading (outside the repo): `E:\Programing\GamesProjects\Minecraft\mc-src-26.3\` (vanilla, neoforge-patched, neoforge-api, fabric-api modules).
+- Decompiled sources for reading (local only, not in git): `local/mc-src/26.3/` (vanilla, neoforge-patched, neoforge-api, fabric-api modules).
 
 ## Build / test
 - `JAVA_HOME=~/.jdks/jdk-25.0.5+8 ./gradlew build -x javadoc` → `fabric/build/libs/quickstack-fabric-26.3-*.jar`, `neoforge/build/libs/...`.
